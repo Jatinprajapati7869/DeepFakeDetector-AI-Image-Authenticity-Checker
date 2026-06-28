@@ -22,32 +22,31 @@ export function History() {
       <div className="mb-8 flex items-center gap-4">
         <Link
           to="/"
-          className="text-sm text-brand-600 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500"
-          aria-label="Back to detector"
+          className="text-sm text-accent hover:underline"
+          aria-label="Back to scanner"
         >
-          ← Back
+          Back
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Analysis History</h1>
+        <h1 className="font-display text-2xl font-bold text-white">Analysis History</h1>
       </div>
 
       {error && (
-        <p role="alert" className="mb-6 text-sm text-red-600">{error}</p>
+        <p role="alert" className="mb-6 text-sm text-fake">{error}</p>
       )}
 
-      {/* Expanded analysis detail */}
       {selected && (
-        <div className="mb-8 animate-slide-up rounded-2xl border border-gray-200 bg-white p-6">
+        <div className="mb-8 animate-slide-up rounded-lg border border-slate-750 bg-surface-raised p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-800 truncate max-w-xs" title={selected.filename}>
+            <h2 className="font-display text-base font-semibold text-slate-200 truncate max-w-xs" title={selected.filename}>
               {selected.filename}
             </h2>
             <button
               type="button"
               onClick={() => setSelected(null)}
-              className="text-sm text-gray-400 hover:text-gray-600"
+              className="text-sm text-slate-500 hover:text-slate-300"
               aria-label="Close detail view"
             >
-              ✕
+              Close
             </button>
           </div>
 
@@ -81,7 +80,7 @@ export function History() {
 
       {isLoading && !data && (
         <div className="flex h-48 items-center justify-center" aria-live="polite" aria-busy="true">
-          <p className="text-sm text-gray-500">Loading…</p>
+          <p className="text-sm text-slate-500">Loading…</p>
         </div>
       )}
     </main>

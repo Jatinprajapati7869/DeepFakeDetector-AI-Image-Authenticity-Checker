@@ -62,7 +62,7 @@ export function BatchUploader() {
           onClick={() => inputRef.current?.click()}
           disabled={isAnalyzing}
           className={clsx(
-            'rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500',
+            'rounded-md bg-accent px-4 py-2 text-sm font-semibold text-surface transition hover:bg-accent-muted',
             isAnalyzing && 'cursor-not-allowed opacity-60',
           )}
           aria-busy={isAnalyzing}
@@ -74,7 +74,7 @@ export function BatchUploader() {
           <button
             type="button"
             onClick={() => dispatch({ type: 'RESET' })}
-            className="text-sm text-gray-500 underline hover:text-gray-700"
+            className="text-sm text-slate-400 underline hover:text-slate-200"
           >
             Clear results
           </button>
@@ -94,7 +94,7 @@ export function BatchUploader() {
       </div>
 
       {state.error && (
-        <p role="alert" className="text-sm text-red-600">{state.error}</p>
+        <p role="alert" className="text-sm text-fake">{state.error}</p>
       )}
 
       {state.results.length > 0 && (
@@ -106,9 +106,9 @@ export function BatchUploader() {
 
 function BatchResultsTable({ results }: { results: BatchResultItem[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200">
+    <div className="overflow-x-auto rounded-lg border border-slate-750">
       <table className="w-full text-sm" aria-label="Batch analysis results">
-        <thead className="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
+        <thead className="bg-surface-raised text-xs font-semibold uppercase tracking-wider text-slate-400">
           <tr>
             <th className="px-4 py-3 text-left">File</th>
             <th className="px-4 py-3 text-left">Verdict</th>
@@ -116,31 +116,31 @@ function BatchResultsTable({ results }: { results: BatchResultItem[] }) {
             <th className="px-4 py-3 text-left">Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 bg-white">
+        <tbody className="divide-y divide-slate-750 bg-surface">
           {results.map((item, i) => (
-            <tr key={i} className="transition hover:bg-gray-50">
-              <td className="max-w-[200px] truncate px-4 py-3 font-medium text-gray-700" title={item.filename}>
+            <tr key={i} className="transition hover:bg-surface-raised">
+              <td className="max-w-[200px] truncate px-4 py-3 font-medium text-slate-300" title={item.filename}>
                 {item.filename}
               </td>
               <td className="px-4 py-3">
                 {item.result ? (
                   <span className={clsx(
-                    'rounded-full px-2.5 py-0.5 text-xs font-bold uppercase',
+                    'rounded-md px-2.5 py-0.5 text-xs font-bold uppercase',
                     item.result.verdict === 'FAKE'
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-green-100 text-green-700',
+                      ? 'bg-red-900/40 text-fake-dark'
+                      : 'bg-green-900/40 text-real-dark',
                   )}>
                     {item.result.verdict}
                   </span>
                 ) : '—'}
               </td>
-              <td className="px-4 py-3 text-gray-600">
+              <td className="px-4 py-3 text-slate-400">
                 {item.result ? `${Math.round(item.result.confidence * 100)}%` : '—'}
               </td>
               <td className="px-4 py-3">
                 {item.error
-                  ? <span className="text-red-500">{item.error}</span>
-                  : <span className="text-green-600">✓ Done</span>
+                  ? <span className="text-fake">{item.error}</span>
+                  : <span className="text-real">Done</span>
                 }
               </td>
             </tr>

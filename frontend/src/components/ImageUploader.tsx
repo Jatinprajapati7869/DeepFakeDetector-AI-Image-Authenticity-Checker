@@ -40,7 +40,6 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (file) processFile(file);
-      // Reset input so the same file can be re-uploaded
       e.target.value = '';
     },
     [processFile],
@@ -69,21 +68,21 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
         onKeyDown={handleKeyDown}
         onClick={() => !isDisabled && inputRef.current?.click()}
         className={clsx(
-          'relative flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed p-12 text-center transition-all duration-200',
+          'relative flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-12 text-center transition-all duration-200',
           isDragging && !isDisabled
-            ? 'border-brand-500 bg-brand-50 scale-[1.01]'
-            : 'border-gray-300 bg-gray-50 hover:border-brand-400 hover:bg-brand-50',
+            ? 'border-accent bg-accent-subtle/30 scale-[1.01]'
+            : 'border-slate-600 bg-surface-raised hover:border-accent/60 hover:bg-surface-overlay/50',
           isDisabled && 'cursor-not-allowed opacity-50',
           !isDisabled && 'cursor-pointer',
         )}
       >
-        <UploadIcon className="h-12 w-12 text-gray-400" />
+        <UploadIcon className="h-12 w-12 text-slate-500" />
 
         <div>
-          <p className="text-base font-semibold text-gray-700">
+          <p className="font-display text-base font-semibold text-slate-200">
             {isDragging ? 'Drop it here' : 'Drop an image or click to browse'}
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-slate-500">
             JPEG, PNG, WebP · Max 10 MB
           </p>
         </div>
@@ -101,7 +100,7 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
       </div>
 
       {validationError && (
-        <p role="alert" className="mt-2 text-sm text-red-600">
+        <p role="alert" className="mt-2 text-sm text-fake">
           {validationError}
         </p>
       )}

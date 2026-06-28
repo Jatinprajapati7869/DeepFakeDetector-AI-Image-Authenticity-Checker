@@ -40,32 +40,32 @@ function ScoreBar({ label, value, tooltip }: { label: string; value: number; too
       ? 'bg-red-500'
       : value >= 0.4
         ? 'bg-orange-400'
-        : 'bg-green-400';
+        : 'bg-emerald-500';
 
   return (
     <div className="group">
       <div className="mb-1 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <span className="text-sm font-medium text-gray-700">{label}</span>
+          <span className="text-sm font-medium text-slate-300">{label}</span>
           <span
             title={tooltip}
             aria-label={`Info: ${tooltip}`}
-            className="cursor-help text-gray-400 hover:text-gray-600"
+            className="cursor-help text-slate-500 hover:text-slate-300 text-xs"
           >
-            ⓘ
+            ?
           </span>
         </div>
-        <span className="text-sm font-semibold text-gray-600">{percentage}%</span>
+        <span className="font-display text-sm font-semibold text-slate-400">{percentage}%</span>
       </div>
 
-      <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+      <div className="h-2 w-full overflow-hidden rounded-sm bg-slate-750">
         <div
           role="progressbar"
           aria-valuenow={percentage}
           aria-valuemin={0}
           aria-valuemax={100}
           aria-label={`${label} score: ${percentage}%`}
-          className={`h-full rounded-full transition-all duration-700 ease-out ${barColor}`}
+          className={`h-full rounded-sm transition-all duration-700 ease-out ${barColor}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -75,8 +75,8 @@ function ScoreBar({ label, value, tooltip }: { label: string; value: number; too
 
 export function AnalysisBreakdown({ artifacts }: AnalysisBreakdownProps) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gray-500">
+    <div className="rounded-lg border border-slate-750 bg-surface-raised p-5">
+      <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider text-slate-400">
         Artifact Analysis
       </h3>
 

@@ -15,11 +15,11 @@ export function HeatmapCanvas({ imageUrl, heatmapUrl, className }: HeatmapCanvas
 
   return (
     <div className={clsx('relative flex flex-col gap-3', className)}>
-      <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-gray-900">
+      <div className="relative overflow-hidden rounded-lg border border-slate-750 bg-black">
         {isLoading && (
           <div
             aria-label="Loading heatmap"
-            className="absolute inset-0 flex items-center justify-center bg-gray-900/60"
+            className="absolute inset-0 flex items-center justify-center bg-black/60"
           >
             <Spinner />
           </div>
@@ -34,7 +34,7 @@ export function HeatmapCanvas({ imageUrl, heatmapUrl, className }: HeatmapCanvas
       <button
         type="button"
         onClick={toggleHeatmap}
-        className="self-center rounded-lg border border-gray-300 bg-white px-4 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500"
+        className="self-center rounded-md border border-slate-750 bg-surface-raised px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-surface-overlay hover:text-white"
         aria-pressed={showHeatmap}
       >
         {showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
@@ -45,7 +45,7 @@ export function HeatmapCanvas({ imageUrl, heatmapUrl, className }: HeatmapCanvas
 
 function Spinner() {
   return (
-    <svg className="h-8 w-8 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className="h-8 w-8 animate-spin text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>

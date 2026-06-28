@@ -18,7 +18,7 @@ async def run_batch_background(job_id: str, files_data: list[tuple[bytes, str]])
     import time
     from app.models.schemas import BatchResultItem
 
-    _jobs[job_id] = {"status": "processing"}
+    _jobs[job_id] = {"status": "processing", "timestamp": time.time()}
     start = time.time()
     results = []
 

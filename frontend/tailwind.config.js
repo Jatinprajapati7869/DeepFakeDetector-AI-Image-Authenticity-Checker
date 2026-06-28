@@ -3,38 +3,43 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+      },
       colors: {
-        brand: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          900: '#0c4a6e',
+        surface: {
+          DEFAULT: '#0F172A',
+          raised: '#1E293B',
+          overlay: '#334155',
+        },
+        accent: {
+          DEFAULT: '#06B6D4',
+          muted: '#0891B2',
+          subtle: '#164E63',
+        },
+        slate: {
+          750: '#293548',
         },
         fake: {
-          light: '#fef2f2',
-          DEFAULT: '#ef4444',
-          dark: '#b91c1c',
+          light: '#3B1111',
+          DEFAULT: '#EF4444',
+          dark: '#FCA5A5',
         },
         real: {
-          light: '#f0fdf4',
-          DEFAULT: '#22c55e',
-          dark: '#15803d',
+          light: '#052E16',
+          DEFAULT: '#22C55E',
+          dark: '#86EFAC',
         },
       },
       animation: {
-        'fade-in': 'fadeIn 0.3s ease-in-out',
         'slide-up': 'slideUp 0.4s ease-out',
         'bar-fill': 'barFill 0.8s ease-out forwards',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         barFill: {

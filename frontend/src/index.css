@@ -14,9 +14,18 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Ensure focus rings are always visible */
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: #0F172A;
+    color: #E2E8F0;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
   :focus-visible {
-    outline: 2px solid theme('colors.brand.500');
+    outline: 2px solid #06B6D4;
     outline-offset: 2px;
   }
 }

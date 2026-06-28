@@ -24,14 +24,12 @@ export function BackendStatus() {
         return;
       }
 
-      // First failed check — start the elapsed timer and mark as waking
       setStatus((prev) => (prev === 'checking' ? 'waking' : prev));
       timerRef.current = setInterval(() => {
         setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
       }, 1000);
     }
 
-    // Initial check immediately, then poll
     check();
     const poller = setInterval(() => {
       if (polling) check();
@@ -44,21 +42,20 @@ export function BackendStatus() {
     };
   }, []);
 
-  // Don't render anything when ready or still on first check
   if (status === 'ready' || status === 'checking') return null;
 
   return (
     <div
       role="status"
       aria-live="polite"
-      className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm"
+      className="mb-6 flex items-start gap-3 rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm"
     >
-      <span className="mt-0.5 shrink-0 animate-spin text-base" aria-hidden="true">⚙️</span>
+      <div className="mt-0.5 h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" aria-hidden="true" />
       <div>
-        <p className="font-semibold text-amber-800">
+        <p className="font-display font-semibold text-amber-400">
           Backend is waking up…{elapsed > 0 ? ` (${elapsed}s)` : ''}
         </p>
-        <p className="mt-0.5 text-amber-700">
+        <p className="mt-0.5 text-amber-500/80">
           The free-tier server starts from sleep on first visit. This takes up to 90 seconds.
           Your upload will work automatically once it&apos;s ready.
         </p>

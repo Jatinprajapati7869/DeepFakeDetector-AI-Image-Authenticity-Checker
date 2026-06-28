@@ -18,6 +18,5 @@ RUN mkdir -p data/heatmaps weights
 EXPOSE 8000
 
 # Download model weights (if missing) then start the server.
-# $PORT is injected by Render; falls back to 8000 locally.
-CMD python download_model.py && \
-    uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# The python script now natively boots uvicorn.
+CMD ["python", "download_model.py"]

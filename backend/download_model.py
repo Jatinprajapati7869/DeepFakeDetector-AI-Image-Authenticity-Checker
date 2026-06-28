@@ -24,26 +24,31 @@ def main() -> None:
         print(
             f"[startup] Model already present at {MODEL_PATH} ({size_mb:.1f} MB) — skipping download."
         )
-        return
+    else:
+        MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        print(f"[startup] Model not found. Downloading {HF_REPO}/{HF_FILE} ...")
 
-    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
-    print(f"[startup] Model not found. Downloading {HF_REPO}/{HF_FILE} ...")
+        try:
+            from huggingface_hub import hf_hub_download
 
-    try:
-        from huggingface_hub import hf_hub_download
+            downloaded = hf_hub_download(
+                repo_id=HF_REPO,
+                filename=HF_FILE,
+                local_dir=str(MODEL_PATH.parent),
+            )
+            print(f"[startup] Downloaded to {downloaded}")
+        except Exception as exc:
+            print(
+                f"[startup] ERROR: Could not download model weights: {exc}", file=sys.stderr
+            )
+            print("[startup] Starting in MOCK mode as fallback.", file=sys.stderr)
+            os.environ["USE_MOCK_MODEL"] = "true"
 
-        downloaded = hf_hub_download(
-            repo_id=HF_REPO,
-            filename=HF_FILE,
-            local_dir=str(MODEL_PATH.parent),
-        )
-        print(f"[startup] Downloaded to {downloaded}")
-    except Exception as exc:
-        print(
-            f"[startup] ERROR: Could not download model weights: {exc}", file=sys.stderr
-        )
-        print("[startup] Starting in MOCK mode as fallback.", file=sys.stderr)
-        os.environ["USE_MOCK_MODEL"] = "true"
+    # Start the web server from within the Python script so env vars persist
+    import subprocess
+    port = os.getenv("PORT", "8000")
+    print(f"[startup] Booting web server on port {port}...")
+    subprocess.run(["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", port])
 
 
 if __name__ == "__main__":

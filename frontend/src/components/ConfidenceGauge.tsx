@@ -18,12 +18,12 @@ export function ConfidenceGauge({ verdict, confidence }: ConfidenceGaugeProps) {
     ? confidence > 0.85 ? '#ef4444' : '#f97316'
     : '#22c55e';
 
-  const labelColor = isFake ? 'text-red-600' : 'text-real-dark';
+  const labelColor = isFake ? 'text-fake-dark' : 'text-real-dark';
   const bgColor = isFake ? 'bg-fake-light' : 'bg-real-light';
 
   return (
     <div
-      className={clsx('flex flex-col items-center gap-3 rounded-2xl p-6', bgColor)}
+      className={clsx('flex flex-col items-center gap-3 rounded-lg p-6', bgColor)}
       role="meter"
       aria-valuenow={percentage}
       aria-valuemin={0}
@@ -32,16 +32,14 @@ export function ConfidenceGauge({ verdict, confidence }: ConfidenceGaugeProps) {
     >
       <div className="relative h-36 w-36">
         <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90">
-          {/* Track */}
           <circle
             cx="70"
             cy="70"
             r={RADIUS}
             fill="none"
-            stroke="#e5e7eb"
+            stroke="#334155"
             strokeWidth="12"
           />
-          {/* Progress arc */}
           <circle
             cx="70"
             cy="70"
@@ -57,10 +55,10 @@ export function ConfidenceGauge({ verdict, confidence }: ConfidenceGaugeProps) {
         </svg>
 
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={clsx('text-3xl font-bold', labelColor)}>
+          <span className={clsx('font-display text-3xl font-bold', labelColor)}>
             {percentage}%
           </span>
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">
             confidence
           </span>
         </div>
@@ -69,10 +67,10 @@ export function ConfidenceGauge({ verdict, confidence }: ConfidenceGaugeProps) {
       <div className="text-center">
         <span
           className={clsx(
-            'inline-block rounded-full px-4 py-1 text-sm font-bold uppercase tracking-widest',
+            'inline-block rounded-md px-4 py-1 text-sm font-bold uppercase tracking-widest',
             isFake
-              ? 'bg-red-100 text-red-700'
-              : 'bg-green-100 text-green-700',
+              ? 'bg-red-900/40 text-fake-dark'
+              : 'bg-green-900/40 text-real-dark',
           )}
         >
           {verdict}

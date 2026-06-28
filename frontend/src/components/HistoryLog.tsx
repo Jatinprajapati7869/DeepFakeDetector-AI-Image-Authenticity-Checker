@@ -34,14 +34,14 @@ export function HistoryLog({
   if (isLoading) {
     return (
       <div className="flex h-48 items-center justify-center" aria-live="polite" aria-busy="true">
-        <p className="text-sm text-gray-500">Loading history…</p>
+        <p className="text-sm text-slate-500">Loading history…</p>
       </div>
     );
   }
 
   if (items.length === 0) {
     return (
-      <div className="flex h-48 flex-col items-center justify-center gap-2 text-gray-400">
+      <div className="flex h-48 flex-col items-center justify-center gap-2 text-slate-500">
         <p className="text-sm">No analyses yet. Upload your first image to get started.</p>
       </div>
     );
@@ -49,41 +49,37 @@ export function HistoryLog({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-gray-500">{total} image{total !== 1 ? 's' : ''} analyzed</p>
+      <p className="text-sm text-slate-500">{total} image{total !== 1 ? 's' : ''} analyzed</p>
 
-      <ul className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white" role="list">
+      <ul className="divide-y divide-slate-750 rounded-lg border border-slate-750 bg-surface-raised" role="list">
         {items.map((item) => (
           <li key={item.id}>
             <button
               type="button"
               onClick={() => onItemClick?.(item)}
-              className="flex w-full items-center gap-4 px-4 py-3 text-left transition hover:bg-gray-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-500"
+              className="flex w-full items-center gap-4 px-4 py-3 text-left transition hover:bg-surface-overlay"
               aria-label={`View analysis for ${item.filename}, verdict: ${item.verdict}, confidence: ${Math.round(item.confidence * 100)}%`}
             >
-              {/* Verdict badge */}
               <span
                 className={clsx(
-                  'shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold uppercase',
+                  'shrink-0 rounded-md px-2.5 py-0.5 text-xs font-bold uppercase',
                   item.verdict === 'FAKE'
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-green-100 text-green-700',
+                    ? 'bg-red-900/40 text-fake-dark'
+                    : 'bg-green-900/40 text-real-dark',
                 )}
               >
                 {item.verdict}
               </span>
 
-              {/* File name */}
-              <span className="min-w-0 flex-1 truncate text-sm text-gray-700" title={item.filename}>
+              <span className="min-w-0 flex-1 truncate text-sm text-slate-300" title={item.filename}>
                 {item.filename}
               </span>
 
-              {/* Confidence */}
-              <span className="shrink-0 text-sm font-semibold text-gray-600">
+              <span className="shrink-0 font-display text-sm font-semibold text-slate-400">
                 {Math.round(item.confidence * 100)}%
               </span>
 
-              {/* Timestamp */}
-              <span className="shrink-0 text-xs text-gray-400">
+              <span className="shrink-0 text-xs text-slate-500">
                 {formatDate(item.created_at)}
               </span>
             </button>
@@ -113,24 +109,24 @@ function Pagination({
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-md border border-slate-750 px-3 py-1.5 text-sm text-slate-400 transition hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-40"
         aria-label="Previous page"
       >
-        ← Prev
+        Prev
       </button>
 
-      <span className="text-sm text-gray-600">
-        Page {page} of {totalPages}
+      <span className="font-display text-sm text-slate-400">
+        {page} / {totalPages}
       </span>
 
       <button
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+        className="rounded-md border border-slate-750 px-3 py-1.5 text-sm text-slate-400 transition hover:bg-surface-raised disabled:cursor-not-allowed disabled:opacity-40"
         aria-label="Next page"
       >
-        Next →
+        Next
       </button>
     </nav>
   );

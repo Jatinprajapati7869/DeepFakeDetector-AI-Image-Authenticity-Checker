@@ -16,7 +16,6 @@ export function Home() {
   const [elapsed, setElapsed] = useState(0);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start / stop the elapsed timer while analyzing
   useEffect(() => {
     if (status === "uploading" || status === "analyzing") {
       setElapsed(0);
@@ -53,34 +52,29 @@ export function Home() {
 
   function loadingMessage(): string {
     if (status === "uploading") return "Uploading image…";
-    if (elapsed < 5) return "Analyzing with AI…";
-    if (elapsed < 20) return `Analyzing… (${elapsed}s)`;
+    if (elapsed < 5) return "Running forensic analysis…";
+    if (elapsed < 20) return `Scanning pixels… (${elapsed}s)`;
     if (elapsed < 60)
-      return `Still working… backend may be waking up (${elapsed}s)`;
+      return `Still working — server may be waking up (${elapsed}s)`;
     return `Almost there… please wait (${elapsed}s)`;
   }
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      {/* Header */}
-      <header className="mb-8 text-center">
-        <div className="mb-3 text-5xl" aria-hidden="true">
-          🛡️
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-          DeepFake Detector
+      <header className="mb-10 text-center">
+        <h1 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          Image Authenticity Scanner
         </h1>
-        <p className="mt-2 text-base text-gray-500">
-          Upload any image and find out if it&apos;s real or AI-generated — with
-          a visual heatmap showing exactly which regions look suspicious.
+        <p className="mt-3 text-base text-slate-400">
+          Drop an image to run a forensic analysis. The neural network
+          highlights the exact pixels it flagged as synthetic.
         </p>
       </header>
 
-      {/* Backend cold-start banner */}
       <BackendStatus />
 
       {/* Mode tabs */}
-      <div className="mb-6 flex rounded-xl border border-gray-200 bg-gray-50 p-1">
+      <div className="mb-6 flex rounded-lg border border-slate-750 bg-surface-raised p-1">
         {(["single", "batch"] as const).map((tab) => (
           <button
             key={tab}
@@ -91,13 +85,13 @@ export function Home() {
             }}
             aria-selected={activeTab === tab}
             role="tab"
-            className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${
+            className={`flex-1 rounded-md py-2 text-sm font-medium transition ${
               activeTab === tab
-                ? "bg-white shadow-sm text-gray-900"
-                : "text-gray-500 hover:text-gray-700"
+                ? "bg-surface-overlay text-white shadow-sm"
+                : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            {tab === "single" ? "🔍 Single Image" : "📦 Batch Mode"}
+            {tab === "single" ? "Single Image" : "Batch Mode"}
           </button>
         ))}
       </div>
@@ -112,14 +106,14 @@ export function Home() {
             <div
               role="status"
               aria-live="polite"
-              className="flex flex-col items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 py-16"
+              className="flex flex-col items-center gap-3 rounded-lg border border-slate-750 bg-surface-raised py-16"
             >
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
-              <p className="text-sm font-medium text-gray-700">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+              <p className="text-sm font-medium text-slate-300">
                 {loadingMessage()}
               </p>
               {elapsed >= 15 && (
-                <p className="max-w-xs text-center text-xs text-gray-400">
+                <p className="max-w-xs text-center text-xs text-slate-500">
                   First request wakes the server and downloads the AI model.
                   Subsequent requests are much faster.
                 </p>
@@ -130,12 +124,12 @@ export function Home() {
           {status === "error" && (
             <div
               role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 p-5 text-center"
+              className="rounded-lg border border-red-900/50 bg-fake-light p-5 text-center"
             >
-              <p className="font-semibold text-red-700">Analysis failed</p>
-              <p className="mt-1 text-sm text-red-600">{error}</p>
+              <p className="font-display font-semibold text-fake-dark">Analysis failed</p>
+              <p className="mt-1 text-sm text-red-400">{error}</p>
               {error?.includes("timed out") || error?.includes("reach") ? (
-                <p className="mt-2 text-xs text-red-500">
+                <p className="mt-2 text-xs text-red-500/80">
                   The backend is probably still waking up. Wait 30 seconds and
                   try again.
                 </p>
@@ -143,7 +137,7 @@ export function Home() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="mt-4 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                className="mt-4 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
               >
                 Try Again
               </button>
@@ -162,7 +156,7 @@ export function Home() {
                     verdict={result.verdict}
                     confidence={result.confidence}
                   />
-                  <p className="text-center text-xs text-gray-400">
+                  <p className="text-center text-xs text-slate-500">
                     Analyzed in {result.analysis_time_ms} ms
                   </p>
                 </div>
@@ -173,7 +167,7 @@ export function Home() {
               <button
                 type="button"
                 onClick={handleReset}
-                className="self-center rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                className="self-center rounded-md border border-slate-750 bg-surface-raised px-5 py-2 text-sm font-medium text-slate-300 transition hover:bg-surface-overlay hover:text-white"
               >
                 Analyze Another Image
               </button>
