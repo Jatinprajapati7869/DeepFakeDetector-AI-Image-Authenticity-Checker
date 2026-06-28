@@ -3,6 +3,18 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+class JobAcceptedResponse(BaseModel):
+    job_id: str
+    message: str = "Job accepted and is processing in the background."
+
+
+class JobStatusResponse(BaseModel):
+    job_id: str
+    status: Literal["processing", "completed", "failed"]
+    result: dict | None = None
+    error: str | None = None
+
+
 class ArtifactBreakdown(BaseModel):
     texture_score: float = Field(..., ge=0.0, le=1.0)
     lighting_score: float = Field(..., ge=0.0, le=1.0)

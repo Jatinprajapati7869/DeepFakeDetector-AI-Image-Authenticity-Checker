@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
+from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile, status
 
-from app.api.deps import get_db
 from app.core.config import settings
-from app.models.schemas import AnalysisResult
-from app.services.analysis_service import run_analysis
+from app.models.schemas import JobAcceptedResponse, JobStatusResponse
+from app.services.analysis_service import get_job_status, run_analysis_background
 
 router = APIRouter()
 
@@ -12,12 +11,15 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
 @router.post(
-    "/analyze", response_model=AnalysisResult, summary="Analyze a single image"
+    "/analyze",
+    response_model=JobAcceptedResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Analyze a single image (Background Task)",
 )
 async def analyze_image(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="JPEG, PNG, or WebP image (max 10 MB)"),
-    db: AsyncSession = Depends(get_db),
-) -> AnalysisResult:
+) -> JobAcceptedResponse:
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
             status_code=415,
@@ -32,13 +34,28 @@ async def analyze_image(
             detail=f"File exceeds maximum size of {settings.max_upload_size_mb} MB.",
         )
 
-    try:
-        result = await run_analysis(
-            file_bytes=raw_bytes,
-            filename=file.filename or "upload",
-            db=db,
-        )
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    job_id = str(uuid.uuid4())
+    background_tasks.add_task(
+        run_analysis_background, job_id, raw_bytes, file.filename or "upload"
+    )
 
-    return result
+    return JobAcceptedResponse(job_id=job_id)
+
+
+@router.get(
+    "/status/{job_id}",
+    response_model=JobStatusResponse,
+    summary="Get background job status",
+)
+async def get_status(job_id: str) -> JobStatusResponse:
+    job = get_job_status(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    return JobStatusResponse(
+        job_id=job_id,
+        status=job["status"],
+        result=job.get("result"),
+        error=job.get("error"),
+    )
+

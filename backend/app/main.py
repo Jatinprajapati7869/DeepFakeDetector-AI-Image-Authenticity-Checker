@@ -30,21 +30,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — must be added before the rate limiter so preflight requests are handled first
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
-    allow_credentials=True,
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
-
 # Sliding-window rate limiter (no external deps)
 app.add_middleware(
     RateLimitMiddleware,
     limit=settings.rate_limit_per_minute,
     window_seconds=60,
     paths=("/api/analyze", "/api/batch"),
+)
+
+# CORS — must be added LAST to be the outermost middleware!
+# This ensures CORS headers are attached to 429 errors from the rate limiter
+# and also correctly intercepts OPTIONS preflight requests.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],
+    allow_headers=["*"],
 )
 
 app.include_router(analyze.router, prefix="/api", tags=["Detection"])

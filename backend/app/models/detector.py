@@ -68,6 +68,10 @@ class DeepfakeDetector:
     def _load_model(self) -> None:
         import torch
 
+        # Restrict PyTorch to a single thread to prevent CPU thrashing
+        # and memory spikes on small instances (like Render Free Tier).
+        torch.set_num_threads(1)
+
         weights_path = Path(settings.model_path)
         if not weights_path.exists():
             raise FileNotFoundError(

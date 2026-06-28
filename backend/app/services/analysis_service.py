@@ -7,6 +7,7 @@ Orchestrates the full analysis pipeline:
 5. Persist the result to the database.
 """
 
+import asyncio
 import time
 import uuid
 from io import BytesIO
@@ -23,6 +24,23 @@ from app.models.detector import detector
 from app.models.schemas import AnalysisResult, ArtifactBreakdown
 
 MAX_DIMENSION = 1024  # Resize oversized images before analysis
+
+# In-memory job registry for background processing
+_jobs: dict[str, dict] = {}
+
+
+def get_job_status(job_id: str) -> dict | None:
+    # Lightweight stale job pruning (5% chance on check)
+    import random
+    if random.random() < 0.05:
+        now = time.time()
+        # Remove jobs older than 1 hour (3600 seconds)
+        stale_keys = [k for k, v in _jobs.items() if v.get("timestamp", now) < now - 3600]
+        for k in stale_keys:
+            _jobs.pop(k, None)
+
+    return _jobs.get(job_id)
+
 
 
 def _compute_artifact_scores(image: Image.Image) -> ArtifactBreakdown:
@@ -77,6 +95,28 @@ def _preprocess_image(raw_bytes: bytes) -> Image.Image:
     return image
 
 
+def _run_cpu_heavy_tasks(
+    file_bytes: bytes, filename: str, analysis_id: str
+) -> tuple[str, float, str, ArtifactBreakdown]:
+    """Run all synchronous CPU-bound operations in a thread."""
+    try:
+        image = _preprocess_image(file_bytes)
+    except Exception as exc:
+        raise ValueError(f"Could not read image '{filename}': {exc}") from exc
+
+    verdict, confidence = detector.predict(image)
+    target_class = 1 if verdict == "FAKE" else 0
+
+    heatmap_url = "/api/heatmap/placeholder"
+    if _gradcam_module.gradcam_engine is not None:
+        heatmap_url = _gradcam_module.gradcam_engine.generate(
+            image, target_class, analysis_id
+        )
+
+    artifacts = _compute_artifact_scores(image)
+    return verdict, confidence, heatmap_url, artifacts
+
+
 async def run_analysis(
     file_bytes: bytes,
     filename: str,
@@ -89,23 +129,13 @@ async def run_analysis(
         ValueError: If the image cannot be opened (corrupt or unsupported format).
     """
     start_ms = time.time()
-
-    try:
-        image = _preprocess_image(file_bytes)
-    except Exception as exc:
-        raise ValueError(f"Could not read image '{filename}': {exc}") from exc
-
     analysis_id = str(uuid.uuid4())
-    verdict, confidence = detector.predict(image)
-    target_class = 1 if verdict == "FAKE" else 0
 
-    heatmap_url = "/api/heatmap/placeholder"
-    if _gradcam_module.gradcam_engine is not None:
-        heatmap_url = _gradcam_module.gradcam_engine.generate(
-            image, target_class, analysis_id
-        )
-
-    artifacts = _compute_artifact_scores(image)
+    # Offload PyTorch inference and image processing to a thread pool
+    # so we don't block the ASGI event loop and fail health checks.
+    verdict, confidence, heatmap_url, artifacts = await asyncio.to_thread(
+        _run_cpu_heavy_tasks, file_bytes, filename, analysis_id
+    )
     elapsed_ms = int((time.time() - start_ms) * 1000)
 
     from datetime import datetime, timezone
@@ -138,3 +168,19 @@ async def run_analysis(
         created_at=now,
         filename=filename,
     )
+
+
+async def run_analysis_background(job_id: str, file_bytes: bytes, filename: str) -> None:
+    """Wrapper to run analysis in the background and update job status."""
+    from app.db.database import AsyncSessionLocal
+
+    _jobs[job_id] = {"status": "processing", "timestamp": time.time()}
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await run_analysis(file_bytes, filename, db)
+            _jobs[job_id] = {"status": "completed", "result": result.model_dump()}
+    except ValueError as exc:
+        _jobs[job_id] = {"status": "failed", "error": str(exc)}
+    except Exception as exc:
+        _jobs[job_id] = {"status": "failed", "error": f"An unexpected error occurred: {exc}"}
+

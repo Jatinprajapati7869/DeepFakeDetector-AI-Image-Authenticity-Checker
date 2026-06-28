@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -16,7 +17,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Model
-    model_path: str = "./weights/efficientnet_b4_ft.pth"
+    model_path: str = "./weights/best_model.pth"
     use_mock_model: bool = True
 
     # Upload limits
@@ -25,7 +26,8 @@ class Settings(BaseSettings):
     # Rate limiting
     rate_limit_per_minute: int = 10
 
-    # CORS
+    # CORS — use "*" to allow any origin (fine for a public portfolio project),
+    # or a comma-separated list of specific origins.
     cors_origins: str = "http://localhost:5173"
 
     # Storage
@@ -34,7 +36,10 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins_list(self) -> list[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",")]
+        raw = self.cors_origins.strip()
+        if raw == "*":
+            return ["*"]
+        return [o.strip() for o in raw.split(",") if o.strip()]
 
     @property
     def max_upload_size_bytes(self) -> int:

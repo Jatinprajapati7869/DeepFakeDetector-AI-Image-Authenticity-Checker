@@ -56,6 +56,16 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         cutoff = now - self._window
 
         with self._lock:
+            # Periodically clean up stale buckets to prevent memory leaks
+            if now - getattr(self, "_last_cleanup", 0) > 300:
+                stale_ips = [
+                    k for k, v in self._buckets.items() 
+                    if not v or v[-1] < cutoff
+                ]
+                for k in stale_ips:
+                    del self._buckets[k]
+                self._last_cleanup = now
+
             bucket = self._buckets[ip]
             # Prune timestamps outside the current window
             while bucket and bucket[0] < cutoff:
