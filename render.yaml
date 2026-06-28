@@ -3,8 +3,6 @@ services:
   - type: web
     name: deepfake-detector-api
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
     plan: free
     healthCheckPath: /api/health
 
@@ -25,6 +23,6 @@ services:
         value: sqlite+aiosqlite:///./data/history.db
       - key: HEATMAP_STORAGE_PATH
         value: ./data/heatmaps
-      # Set this after deploying the frontend — paste your Vercel URL here:
+      # Update this after you deploy the frontend on Vercel:
       - key: CORS_ORIGINS
         value: https://deepfake-detector.vercel.app,http://localhost:5173
