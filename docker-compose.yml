@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/weights:/app/weights:ro
+      - sqlite_data:/app/data
+    environment:
+      - USE_MOCK_MODEL=true
+      - CORS_ORIGINS=http://localhost:5173
+      - DATABASE_URL=sqlite+aiosqlite:///./data/history.db
+      - HEATMAP_STORAGE_PATH=./data/heatmaps
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:

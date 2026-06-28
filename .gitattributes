@@ -1,0 +1,18 @@
+# Normalize line endings: LF in repo, platform-native on checkout
+* text=auto
+
+# Force LF for these file types even on Windows
+*.py   text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf
+*.css  text eol=lf
+*.html text eol=lf
+
+# Binary files — never touch line endings
+*.pth  binary
+*.png  binary
+*.jpg  binary
+*.db   binary
