@@ -9,9 +9,9 @@ Orchestrates the full analysis pipeline:
 
 import asyncio
 import logging
-import random
 import time
 import uuid
+from datetime import UTC
 from io import BytesIO
 
 import cv2
@@ -20,7 +20,6 @@ from PIL import Image
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.models.gradcam as _gradcam_module  # module ref so we always see the live gradcam_engine
-from app.core.config import settings
 from app.db.models import AnalysisRecord
 from app.models.detector import detector
 from app.models.schemas import AnalysisResult, ArtifactBreakdown
@@ -56,7 +55,6 @@ def register_job(job_id: str) -> None:
 def update_job(job_id: str, data: dict) -> None:
     """Write the completed or failed result for a job."""
     _jobs[job_id] = data
-
 
 
 def _compute_artifact_scores(image: Image.Image) -> ArtifactBreakdown:
@@ -125,9 +123,7 @@ def _run_cpu_heavy_tasks(
 
     heatmap_url = "/api/heatmap/placeholder"
     if _gradcam_module.gradcam_engine is not None:
-        heatmap_url = _gradcam_module.gradcam_engine.generate(
-            image, target_class, analysis_id
-        )
+        heatmap_url = _gradcam_module.gradcam_engine.generate(image, target_class, analysis_id)
 
     artifacts = _compute_artifact_scores(image)
     return verdict, confidence, heatmap_url, artifacts
@@ -154,16 +150,16 @@ async def run_analysis(
             asyncio.to_thread(_run_cpu_heavy_tasks, file_bytes, filename, analysis_id),
             timeout=INFERENCE_TIMEOUT_S,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         raise ValueError(
             f"Analysis of '{filename}' timed out after {INFERENCE_TIMEOUT_S}s. "
             "The server may be under heavy load — please try again."
-        )
+        ) from None
     elapsed_ms = int((time.time() - start_ms) * 1000)
 
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     record = AnalysisRecord(
         id=analysis_id,
@@ -209,12 +205,15 @@ async def run_analysis_background(job_id: str, file_bytes: bytes, filename: str)
             "Unexpected error in background analysis",
             extra={"job_id": job_id, "filename": filename},
         )
-        update_job(job_id, {"status": "failed", "error": "An unexpected error occurred. Please try again."})
+        update_job(
+            job_id, {"status": "failed", "error": "An unexpected error occurred. Please try again."}
+        )
 
 
 async def run_batch_background(job_id: str, files_data: list[tuple[bytes, str]]) -> None:
-    from app.db.database import AsyncSessionLocal
     import time
+
+    from app.db.database import AsyncSessionLocal
     from app.models.schemas import BatchResultItem
 
     register_job(job_id)
@@ -231,9 +230,12 @@ async def run_batch_background(job_id: str, files_data: list[tuple[bytes, str]])
                     results.append(BatchResultItem(filename=filename, error=str(exc)).model_dump())
 
             elapsed_ms = int((time.time() - start) * 1000)
-            update_job(job_id, {
-                "status": "completed",
-                "result": {"results": results, "total_analysis_time_ms": elapsed_ms},
-            })
+            update_job(
+                job_id,
+                {
+                    "status": "completed",
+                    "result": {"results": results, "total_analysis_time_ms": elapsed_ms},
+                },
+            )
     except Exception as exc:
         update_job(job_id, {"status": "failed", "error": str(exc)})

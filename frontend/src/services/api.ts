@@ -1,10 +1,6 @@
-import type {
-  AnalysisResult,
-  BatchResultItem,
-  HistoryPage,
-} from "@/types/analysis";
+import type { AnalysisResult, BatchResultItem, HistoryPage } from '@/types/analysis';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
 // Generous timeouts: the Render free tier needs time to wake up and
 // download the model (~90s on a cold start).
@@ -20,7 +16,7 @@ export class ApiError extends Error {
     message: string,
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
@@ -36,16 +32,16 @@ async function fetchWithTimeout(
     const res = await fetch(url, { ...options, signal: controller.signal });
     return res;
   } catch (err) {
-    if (err instanceof DOMException && err.name === "AbortError") {
+    if (err instanceof DOMException && err.name === 'AbortError') {
       throw new ApiError(
         408,
-        "The request timed out. The backend may still be waking up — please wait 30 seconds and try again.",
+        'The request timed out. The backend may still be waking up — please wait 30 seconds and try again.',
       );
     }
     // Network error (CORS, no internet, backend down)
     throw new ApiError(
       0,
-      "Could not reach the server. Check your internet connection or wait for the backend to wake up.",
+      'Could not reach the server. Check your internet connection or wait for the backend to wake up.',
     );
   } finally {
     clearTimeout(timer);
@@ -79,11 +75,11 @@ export const api = {
         const res = await fetchWithTimeout(`${BASE_URL}/api/status/${jobId}`, {}, 10_000);
         const data = await handleResponse<{ status: string; result?: T; error?: string }>(res);
 
-        if (data.status === "completed" && data.result) {
+        if (data.status === 'completed' && data.result) {
           return data.result;
         }
-        if (data.status === "failed") {
-          throw new ApiError(500, data.error || "Background job failed.");
+        if (data.status === 'failed') {
+          throw new ApiError(500, data.error || 'Background job failed.');
         }
 
         attempt++;
@@ -93,7 +89,7 @@ export const api = {
           throw err;
         }
         // Otherwise (like a 408 timeout or network drop), ignore and let the loop retry
-        console.warn("Polling interrupted, retrying...", err);
+        console.warn('Polling interrupted, retrying...', err);
         attempt++;
       }
 
@@ -102,16 +98,16 @@ export const api = {
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
 
-    throw new ApiError(408, "The request timed out while polling job status.");
+    throw new ApiError(408, 'The request timed out while polling job status.');
   },
 
   async analyzeImage(file: File): Promise<AnalysisResult> {
     const form = new FormData();
-    form.append("file", file);
+    form.append('file', file);
 
     const res = await fetchWithTimeout(
       `${BASE_URL}/api/analyze`,
-      { method: "POST", body: form },
+      { method: 'POST', body: form },
       30_000,
     );
     const data = await handleResponse<{ job_id: string }>(res);
@@ -120,15 +116,18 @@ export const api = {
 
   async analyzeBatch(files: File[]): Promise<BatchResultItem[]> {
     const form = new FormData();
-    files.forEach((f) => form.append("files", f));
+    files.forEach((f) => form.append('files', f));
 
     const res = await fetchWithTimeout(
       `${BASE_URL}/api/batch`,
-      { method: "POST", body: form },
+      { method: 'POST', body: form },
       30_000,
     );
     const data = await handleResponse<{ job_id: string }>(res);
-    const result = await this.pollJobStatus<{ results: BatchResultItem[] }>(data.job_id, TIMEOUT_MS.batch);
+    const result = await this.pollJobStatus<{ results: BatchResultItem[] }>(
+      data.job_id,
+      TIMEOUT_MS.batch,
+    );
     return result.results;
   },
 

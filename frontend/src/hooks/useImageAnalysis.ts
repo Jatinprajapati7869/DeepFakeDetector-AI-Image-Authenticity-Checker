@@ -50,9 +50,7 @@ export function useImageAnalysis() {
       dispatch({ type: 'SUCCESS', payload: result });
     } catch (err) {
       const message =
-        err instanceof ApiError
-          ? err.message
-          : 'An unexpected error occurred. Please try again.';
+        err instanceof ApiError ? err.message : 'An unexpected error occurred. Please try again.';
       dispatch({ type: 'ERROR', payload: message });
     }
   }, []);

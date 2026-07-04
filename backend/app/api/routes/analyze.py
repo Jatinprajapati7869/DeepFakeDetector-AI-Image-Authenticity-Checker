@@ -1,7 +1,7 @@
 import uuid
+
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile, status
 
-from app.core.config import settings
 from app.models.schemas import JobAcceptedResponse, JobStatusResponse
 from app.services.analysis_service import get_job_status, run_analysis_background
 from app.utils.validation import validate_image_file
@@ -22,9 +22,7 @@ async def analyze_image(
     raw_bytes = await validate_image_file(file)
 
     job_id = str(uuid.uuid4())
-    background_tasks.add_task(
-        run_analysis_background, job_id, raw_bytes, file.filename or "upload"
-    )
+    background_tasks.add_task(run_analysis_background, job_id, raw_bytes, file.filename or "upload")
 
     return JobAcceptedResponse(job_id=job_id)
 
@@ -45,4 +43,3 @@ async def get_status(job_id: str) -> JobStatusResponse:
         result=job.get("result"),
         error=job.get("error"),
     )
-

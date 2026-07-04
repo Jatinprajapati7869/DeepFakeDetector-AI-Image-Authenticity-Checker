@@ -1,0 +1,31 @@
+{
+  "name": "deepfake-detector-dx",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare": "husky",
+    "setup": "cd backend && pip install -r requirements.txt && cd ../frontend && npm install && cd .. && npm install",
+    "dev": "start cmd /k \"cd backend && fastapi dev app/main.py\" && start cmd /k \"cd frontend && npm run dev\"",
+    "check": "npm run lint && npm run test",
+    "lint": "cd backend && python -m ruff check . --fix && python -m ruff format . && cd ../frontend && npm run format && npm run lint",
+    "test": "cd backend && python -m pytest tests/ && cd ../frontend && npm test",
+    "clean": "cd backend && rmdir /S /Q __pycache__ .pytest_cache .ruff_cache 2>nul || exit 0 && cd ../frontend && rmdir /S /Q node_modules dist coverage 2>nul || exit 0 && cd .. && rmdir /S /Q node_modules 2>nul || exit 0"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.0.0"
+  },
+  "lint-staged": {
+    "frontend/**/*.{ts,tsx,css}": [
+      "prettier --write"
+    ],
+    "backend/**/*.py": [
+      "python -m ruff check --fix",
+      "python -m ruff format"
+    ]
+  }
+}

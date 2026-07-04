@@ -3,6 +3,7 @@ Integration tests for GET /api/status/{job_id}.
 """
 
 from httpx import AsyncClient
+
 from app.services.analysis_service import register_job, update_job
 
 
@@ -35,8 +36,8 @@ async def test_status_completed_job(client: AsyncClient):
         job_id,
         {
             "status": "completed",
-            "result": {"verdict": "REAL", "confidence": 0.99, "heatmap_url": "http://test"}
-        }
+            "result": {"verdict": "REAL", "confidence": 0.99, "heatmap_url": "http://test"},
+        },
     )
 
     response = await client.get(f"/api/status/{job_id}")

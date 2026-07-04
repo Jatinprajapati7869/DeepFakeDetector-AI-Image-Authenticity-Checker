@@ -13,11 +13,12 @@ import pytest_asyncio
 os.environ["USE_MOCK_MODEL"] = "true"
 os.environ["DATABASE_URL"] = "sqlite+aiosqlite:///:memory:"
 
-from app.db.database import Base, create_tables, engine  # noqa: E402
-from app.main import app  # noqa: E402
-from app.models.detector import detector  # noqa: E402
-from app.models.gradcam import init_gradcam  # noqa: E402
-from httpx import ASGITransport, AsyncClient  # noqa: E402
+from httpx import ASGITransport, AsyncClient
+
+from app.db.database import Base, engine
+from app.main import app
+from app.models.detector import detector
+from app.models.gradcam import init_gradcam
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -33,9 +34,7 @@ async def client():
 
     init_gradcam(detector.get_model())
 
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as c:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
         yield c
 
     async with engine.begin() as conn:

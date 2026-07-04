@@ -19,8 +19,14 @@ export function BackendStatus() {
   useEffect(() => {
     function stopAll() {
       activeRef.current = false;
-      if (elapsedTimerRef.current) { clearInterval(elapsedTimerRef.current); elapsedTimerRef.current = null; }
-      if (pollerRef.current) { clearInterval(pollerRef.current); pollerRef.current = null; }
+      if (elapsedTimerRef.current) {
+        clearInterval(elapsedTimerRef.current);
+        elapsedTimerRef.current = null;
+      }
+      if (pollerRef.current) {
+        clearInterval(pollerRef.current);
+        pollerRef.current = null;
+      }
     }
 
     function startElapsedTimer() {
@@ -91,14 +97,17 @@ export function BackendStatus() {
       aria-live="polite"
       className="mb-6 flex items-start gap-3 rounded-lg border border-amber-900/50 bg-amber-950/30 px-4 py-3 text-sm"
     >
-      <div className="mt-0.5 h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-amber-500 border-t-transparent" aria-hidden="true" />
+      <div
+        className="mt-0.5 h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-amber-500 border-t-transparent"
+        aria-hidden="true"
+      />
       <div>
         <p className="font-display font-semibold text-amber-400">
           Backend is waking up…{elapsed > 0 ? ` (${elapsed}s)` : ''}
         </p>
         <p className="mt-0.5 text-amber-500/80">
-          The free-tier server starts from sleep on first visit. This takes up to 90 seconds.
-          Your upload will work automatically once it&apos;s ready.
+          The free-tier server starts from sleep on first visit. This takes up to 90 seconds. Your
+          upload will work automatically once it&apos;s ready.
         </p>
       </div>
     </div>

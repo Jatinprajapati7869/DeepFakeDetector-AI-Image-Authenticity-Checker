@@ -18,17 +18,24 @@ type Action =
 
 function reducer(state: BatchState, action: Action): BatchState {
   switch (action.type) {
-    case 'START':   return { status: 'analyzing', results: [], error: null };
-    case 'SUCCESS': return { status: 'done', results: action.payload, error: null };
-    case 'ERROR':   return { status: 'error', results: [], error: action.payload };
-    case 'RESET':   return { status: 'idle', results: [], error: null };
-    default:        return state;
+    case 'START':
+      return { status: 'analyzing', results: [], error: null };
+    case 'SUCCESS':
+      return { status: 'done', results: action.payload, error: null };
+    case 'ERROR':
+      return { status: 'error', results: [], error: action.payload };
+    case 'RESET':
+      return { status: 'idle', results: [], error: null };
+    default:
+      return state;
   }
 }
 
 export function BatchUploader() {
   const [state, dispatch] = useReducer(reducer, {
-    status: 'idle', results: [], error: null,
+    status: 'idle',
+    results: [],
+    error: null,
   });
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -94,12 +101,12 @@ export function BatchUploader() {
       </div>
 
       {state.error && (
-        <p role="alert" className="text-sm text-fake">{state.error}</p>
+        <p role="alert" className="text-sm text-fake">
+          {state.error}
+        </p>
       )}
 
-      {state.results.length > 0 && (
-        <BatchResultsTable results={state.results} />
-      )}
+      {state.results.length > 0 && <BatchResultsTable results={state.results} />}
     </div>
   );
 }
@@ -119,29 +126,37 @@ function BatchResultsTable({ results }: { results: BatchResultItem[] }) {
         <tbody className="divide-y divide-slate-750 bg-surface">
           {results.map((item, i) => (
             <tr key={i} className="transition hover:bg-surface-raised">
-              <td className="max-w-[200px] truncate px-4 py-3 font-medium text-slate-300" title={item.filename}>
+              <td
+                className="max-w-[200px] truncate px-4 py-3 font-medium text-slate-300"
+                title={item.filename}
+              >
                 {item.filename}
               </td>
               <td className="px-4 py-3">
                 {item.result ? (
-                  <span className={clsx(
-                    'rounded-md px-2.5 py-0.5 text-xs font-bold uppercase',
-                    item.result.verdict === 'FAKE'
-                      ? 'bg-red-900/40 text-fake-dark'
-                      : 'bg-green-900/40 text-real-dark',
-                  )}>
+                  <span
+                    className={clsx(
+                      'rounded-md px-2.5 py-0.5 text-xs font-bold uppercase',
+                      item.result.verdict === 'FAKE'
+                        ? 'bg-red-900/40 text-fake-dark'
+                        : 'bg-green-900/40 text-real-dark',
+                    )}
+                  >
                     {item.result.verdict}
                   </span>
-                ) : '—'}
+                ) : (
+                  '—'
+                )}
               </td>
               <td className="px-4 py-3 text-slate-400">
                 {item.result ? `${Math.round(item.result.confidence * 100)}%` : '—'}
               </td>
               <td className="px-4 py-3">
-                {item.error
-                  ? <span className="text-fake">{item.error}</span>
-                  : <span className="text-real">Done</span>
-                }
+                {item.error ? (
+                  <span className="text-fake">{item.error}</span>
+                ) : (
+                  <span className="text-real">Done</span>
+                )}
               </td>
             </tr>
           ))}

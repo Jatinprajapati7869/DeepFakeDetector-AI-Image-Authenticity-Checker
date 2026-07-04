@@ -1,7 +1,9 @@
 from fastapi import HTTPException, UploadFile
+
 from app.core.config import settings
 
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
 
 async def validate_image_file(file: UploadFile) -> bytes:
     """Validates the file type and size, returning the raw bytes if valid."""

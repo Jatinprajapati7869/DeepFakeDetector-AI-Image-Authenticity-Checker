@@ -13,7 +13,7 @@ describe('api service', () => {
         new Response(JSON.stringify({ status: 'completed', result: mockResult }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
 
       const result = await api.pollJobStatus('job-1', 10000);
@@ -23,21 +23,21 @@ describe('api service', () => {
 
     it('API2: retries and resolves on second poll', async () => {
       const mockResult = { foo: 'bar' };
-      
+
       const fetchSpy = vi.spyOn(globalThis, 'fetch');
       // First call: processing
       fetchSpy.mockResolvedValueOnce(
         new Response(JSON.stringify({ status: 'processing' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
       // Second call: completed
       fetchSpy.mockResolvedValueOnce(
         new Response(JSON.stringify({ status: 'completed', result: mockResult }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
 
       const result = await api.pollJobStatus('job-2', 10000);
@@ -50,7 +50,7 @@ describe('api service', () => {
         new Response(JSON.stringify({ status: 'failed', error: 'Something broke' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
 
       await expect(api.pollJobStatus('job-3', 10000)).rejects.toMatchObject({
@@ -66,7 +66,7 @@ describe('api service', () => {
         new Response(JSON.stringify({ status: 'processing' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
 
       // A tiny timeout so it fails after the first processing tick
@@ -77,12 +77,12 @@ describe('api service', () => {
 
     it('API5: backoff delay grows exponentially between retries', async () => {
       vi.useFakeTimers();
-      
+
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
         new Response(JSON.stringify({ status: 'processing' }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
 
       // Start polling (this promise will not resolve quickly because it's polling)
@@ -93,16 +93,16 @@ describe('api service', () => {
       await vi.runAllTicks();
       expect(fetchSpy).toHaveBeenCalledTimes(1);
 
-      // Attempt 1 delay should be 2s (2000 * 2^0) -> actually wait, attempt starts at 0, 
+      // Attempt 1 delay should be 2s (2000 * 2^0) -> actually wait, attempt starts at 0,
       // but inside the catch/finally it increments. Wait, code has:
       // const delay = Math.min(2_000 * 2 ** attempt, 15_000);
       // Wait, let's just advance timers manually.
-      
+
       await vi.advanceTimersByTimeAsync(3999);
       // Should be 1 more call since attempt 1 delay is 4s
       // Wait, attempt starts at 0. First fetch done. delay = 2_000 * 2^1 ?
       // Let's just check exponential growth by jumping time and counting calls.
-      
+
       vi.useRealTimers();
       // Test exponential formula directly to avoid fragile async timer tests
       // delay = Math.min(2_000 * 2 ** attempt, 15_000)
@@ -118,7 +118,7 @@ describe('api service', () => {
         new Response(JSON.stringify({ job_id: 'job-img-1' }), {
           status: 202,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
       // Mock the GET /api/status response
       const mockResult = { id: 'img-res' };
@@ -126,12 +126,12 @@ describe('api service', () => {
         new Response(JSON.stringify({ status: 'completed', result: mockResult }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
-        })
+        }),
       );
 
       const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
       const result = await api.analyzeImage(file);
-      
+
       expect(result).toEqual(mockResult);
       expect(fetchSpy).toHaveBeenCalledTimes(2);
       expect(fetchSpy.mock.calls[0][0]).toMatch(/\/api\/analyze$/);

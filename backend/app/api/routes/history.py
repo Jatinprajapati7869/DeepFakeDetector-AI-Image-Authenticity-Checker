@@ -1,12 +1,13 @@
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
-from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_db
 from app.core.config import settings
-from app.models.schemas import HistoryPage, AnalysisResult
-from app.services.history_service import get_history_page, get_analysis_by_id
+from app.models.schemas import AnalysisResult, HistoryPage
+from app.services.history_service import get_analysis_by_id, get_history_page
 
 router = APIRouter()
 
@@ -20,7 +21,9 @@ async def list_history(
     return await get_history_page(db, page=page, page_size=page_size)
 
 
-@router.get("/history/{analysis_id}", response_model=AnalysisResult, summary="Get a single analysis")
+@router.get(
+    "/history/{analysis_id}", response_model=AnalysisResult, summary="Get a single analysis"
+)
 async def get_analysis(
     analysis_id: str,
     db: AsyncSession = Depends(get_db),

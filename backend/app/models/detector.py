@@ -34,9 +34,7 @@ def _build_model():
     class _DeepShieldModel(nn.Module):
         def __init__(self):
             super().__init__()
-            self.backbone = timm.create_model(
-                "efficientnet_b4", pretrained=False, num_classes=0
-            )
+            self.backbone = timm.create_model("efficientnet_b4", pretrained=False, num_classes=0)
             self.classifier = nn.Sequential(
                 nn.Linear(self.backbone.num_features, 256),
                 nn.ReLU(),
@@ -82,9 +80,7 @@ class DeepfakeDetector:
 
         self._device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model = _build_model()
-        state_dict = torch.load(
-            weights_path, map_location=self._device, weights_only=True
-        )
+        state_dict = torch.load(weights_path, map_location=self._device, weights_only=True)
         model.load_state_dict(state_dict)
         model.eval()
         self._model = model.to(self._device)

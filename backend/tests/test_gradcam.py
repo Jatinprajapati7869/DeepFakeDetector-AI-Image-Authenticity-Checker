@@ -4,6 +4,7 @@ Unit tests for the Grad-CAM engine.
 Validates that the mock heatmap generation produces a valid PNG
 at the correct path without requiring trained weights.
 """
+
 import os
 import uuid
 from pathlib import Path
@@ -13,8 +14,8 @@ from PIL import Image
 
 os.environ.setdefault("USE_MOCK_MODEL", "true")
 
-from app.models.gradcam import GradCAMEngine  # noqa: E402
-from app.core.config import settings  # noqa: E402
+from app.core.config import settings
+from app.models.gradcam import GradCAMEngine
 
 
 @pytest.fixture
@@ -48,6 +49,7 @@ def test_heatmap_dimensions_match_input(sample_image: Image.Image, tmp_path: Pat
     engine.generate(sample_image, target_class=1, analysis_id=analysis_id)
 
     from PIL import Image as PILImage
+
     result = PILImage.open(tmp_path / f"{analysis_id}.png")
     assert result.size == sample_image.size, "Heatmap should match original image dimensions"
 

@@ -37,4 +37,3 @@ async def analyze_batch(
     background_tasks.add_task(run_batch_background, job_id, files_data)
 
     return JobAcceptedResponse(job_id=job_id)
-

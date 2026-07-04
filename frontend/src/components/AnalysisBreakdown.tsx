@@ -35,12 +35,7 @@ const SCORES: ScoreItem[] = [
 
 function ScoreBar({ label, value, tooltip }: { label: string; value: number; tooltip: string }) {
   const percentage = Math.round(value * 100);
-  const barColor =
-    value >= 0.7
-      ? 'bg-red-500'
-      : value >= 0.4
-        ? 'bg-orange-400'
-        : 'bg-emerald-500';
+  const barColor = value >= 0.7 ? 'bg-red-500' : value >= 0.4 ? 'bg-orange-400' : 'bg-emerald-500';
 
   return (
     <div className="group">
@@ -82,12 +77,7 @@ export function AnalysisBreakdown({ artifacts }: AnalysisBreakdownProps) {
 
       <div className="flex flex-col gap-4">
         {SCORES.map(({ label, key, tooltip }) => (
-          <ScoreBar
-            key={key}
-            label={label}
-            value={artifacts[key]}
-            tooltip={tooltip}
-          />
+          <ScoreBar key={key} label={label} value={artifacts[key]} tooltip={tooltip} />
         ))}
       </div>
     </div>

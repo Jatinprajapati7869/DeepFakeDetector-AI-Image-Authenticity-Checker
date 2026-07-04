@@ -38,14 +38,13 @@ def main() -> None:
             )
             print(f"[startup] Downloaded to {downloaded}")
         except Exception as exc:
-            print(
-                f"[startup] ERROR: Could not download model weights: {exc}", file=sys.stderr
-            )
+            print(f"[startup] ERROR: Could not download model weights: {exc}", file=sys.stderr)
             print("[startup] Starting in MOCK mode as fallback.", file=sys.stderr)
             os.environ["USE_MOCK_MODEL"] = "true"
 
     # Start the web server from within the Python script so env vars persist
     import subprocess
+
     port = os.getenv("PORT", "8000")
     print(f"[startup] Booting web server on port {port}...")
     subprocess.run(["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", port])

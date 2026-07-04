@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class GradCAMEngine:
-    def __init__(self, model: "nn.Module | None") -> None:
+    def __init__(self, model: nn.Module | None) -> None:
         self._model = model
         self._feature_maps = None
         self._gradients = None
@@ -112,9 +112,7 @@ class GradCAMEngine:
         cam_uint8 = cam_norm.astype(np.uint8)
 
         heatmap_bgr = cv2.applyColorMap(cam_uint8, cv2.COLORMAP_JET)
-        original_bgr = cv2.cvtColor(
-            np.array(original.convert("RGB")), cv2.COLOR_RGB2BGR
-        )
+        original_bgr = cv2.cvtColor(np.array(original.convert("RGB")), cv2.COLOR_RGB2BGR)
         blended = cv2.addWeighted(original_bgr, 0.55, heatmap_bgr, 0.45, 0)
 
         output_path = settings.heatmap_dir / f"{analysis_id}.png"
@@ -122,7 +120,6 @@ class GradCAMEngine:
         return output_path
 
     def _generate_mock_heatmap(self, image: Image.Image, analysis_id: str) -> str:
-        import cv2
 
         w, h = image.size[0], image.size[1]
         canvas = np.zeros((h, w), dtype=np.float32)
@@ -143,6 +140,6 @@ class GradCAMEngine:
 gradcam_engine: GradCAMEngine | None = None
 
 
-def init_gradcam(model: "nn.Module | None") -> None:
+def init_gradcam(model: nn.Module | None) -> None:
     global gradcam_engine
     gradcam_engine = GradCAMEngine(model)

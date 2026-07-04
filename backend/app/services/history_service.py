@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,11 +49,7 @@ async def get_history_page(
     )
 
 
-async def get_analysis_by_id(
-    db: AsyncSession, analysis_id: str
-) -> AnalysisResult | None:
-    result = await db.execute(
-        select(AnalysisRecord).where(AnalysisRecord.id == analysis_id)
-    )
+async def get_analysis_by_id(db: AsyncSession, analysis_id: str) -> AnalysisResult | None:
+    result = await db.execute(select(AnalysisRecord).where(AnalysisRecord.id == analysis_id))
     record = result.scalar_one_or_none()
     return _record_to_schema(record) if record else None

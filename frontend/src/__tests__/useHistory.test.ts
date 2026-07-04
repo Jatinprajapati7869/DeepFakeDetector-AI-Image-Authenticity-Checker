@@ -6,7 +6,16 @@ import type { HistoryPage } from '@/types/analysis';
 
 const MOCK_PAGE_1: HistoryPage = {
   items: [
-    { id: '1', verdict: 'FAKE', confidence: 0.9, heatmap_url: '', artifacts: { texture_score: 0, lighting_score: 0, edge_score: 0, frequency_score: 0 }, analysis_time_ms: 100, created_at: '', filename: '1.jpg' }
+    {
+      id: '1',
+      verdict: 'FAKE',
+      confidence: 0.9,
+      heatmap_url: '',
+      artifacts: { texture_score: 0, lighting_score: 0, edge_score: 0, frequency_score: 0 },
+      analysis_time_ms: 100,
+      created_at: '',
+      filename: '1.jpg',
+    },
   ],
   total: 2,
   page: 1,
@@ -15,7 +24,16 @@ const MOCK_PAGE_1: HistoryPage = {
 
 const MOCK_PAGE_2: HistoryPage = {
   items: [
-    { id: '2', verdict: 'REAL', confidence: 0.9, heatmap_url: '', artifacts: { texture_score: 0, lighting_score: 0, edge_score: 0, frequency_score: 0 }, analysis_time_ms: 100, created_at: '', filename: '2.jpg' }
+    {
+      id: '2',
+      verdict: 'REAL',
+      confidence: 0.9,
+      heatmap_url: '',
+      artifacts: { texture_score: 0, lighting_score: 0, edge_score: 0, frequency_score: 0 },
+      analysis_time_ms: 100,
+      created_at: '',
+      filename: '2.jpg',
+    },
   ],
   total: 2,
   page: 2,
@@ -29,12 +47,12 @@ describe('useHistory', () => {
 
   it('H1: Fetches page 1 on mount', async () => {
     const fetchSpy = vi.spyOn(apiModule.api, 'getHistory').mockResolvedValue(MOCK_PAGE_1);
-    
+
     const { result } = renderHook(() => useHistory());
-    
+
     // Initially loading
     expect(result.current.isLoading).toBe(true);
-    
+
     // Wait for effect to settle
     await vi.waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -49,9 +67,9 @@ describe('useHistory', () => {
     const fetchSpy = vi.spyOn(apiModule.api, 'getHistory');
     fetchSpy.mockResolvedValueOnce(MOCK_PAGE_1);
     fetchSpy.mockResolvedValueOnce(MOCK_PAGE_2);
-    
+
     const { result } = renderHook(() => useHistory());
-    
+
     await vi.waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
@@ -72,9 +90,9 @@ describe('useHistory', () => {
 
   it('H3: Error response exposes error string and clears data', async () => {
     vi.spyOn(apiModule.api, 'getHistory').mockRejectedValue(new Error('Failed to fetch'));
-    
+
     const { result } = renderHook(() => useHistory());
-    
+
     await vi.waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });

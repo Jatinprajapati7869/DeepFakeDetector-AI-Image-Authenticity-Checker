@@ -1,0 +1,26 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+fix = true
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "RUF",  # Ruff-specific rules
+]
+ignore = ["E501"]  # Line length handled by formatter
+extend-ignore = [
+    "B008",   # Do not perform function call in argument defaults (Standard for FastAPI)
+    "RUF002", # Ambiguous characters in docstrings
+    "RUF003", # Ambiguous characters in comments
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

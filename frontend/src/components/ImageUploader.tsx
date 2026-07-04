@@ -45,15 +45,12 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
     [processFile],
   );
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        inputRef.current?.click();
-      }
-    },
-    [],
-  );
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      inputRef.current?.click();
+    }
+  }, []);
 
   return (
     <div className="w-full">
@@ -63,7 +60,10 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
         aria-label="Image upload area. Press Enter or Space to browse files, or drag and drop an image here."
         aria-disabled={isDisabled}
         onDrop={handleDrop}
-        onDragOver={(e) => { e.preventDefault(); if (!isDisabled) setIsDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!isDisabled) setIsDragging(true);
+        }}
         onDragLeave={() => setIsDragging(false)}
         onKeyDown={handleKeyDown}
         onClick={() => !isDisabled && inputRef.current?.click()}
@@ -82,9 +82,7 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
           <p className="font-display text-base font-semibold text-slate-200">
             {isDragging ? 'Drop it here' : 'Drop an image or click to browse'}
           </p>
-          <p className="mt-1 text-sm text-slate-500">
-            JPEG, PNG, WebP · Max 10 MB
-          </p>
+          <p className="mt-1 text-sm text-slate-500">JPEG, PNG, WebP · Max 10 MB</p>
         </div>
 
         <input
@@ -110,8 +108,20 @@ export function ImageUploader({ onFileSelected, isDisabled = false }: ImageUploa
 
 function UploadIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+      />
     </svg>
   );
 }

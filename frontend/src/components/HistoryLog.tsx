@@ -49,9 +49,14 @@ export function HistoryLog({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-slate-500">{total} image{total !== 1 ? 's' : ''} analyzed</p>
+      <p className="text-sm text-slate-500">
+        {total} image{total !== 1 ? 's' : ''} analyzed
+      </p>
 
-      <ul className="divide-y divide-slate-750 rounded-lg border border-slate-750 bg-surface-raised" role="list">
+      <ul
+        className="divide-y divide-slate-750 rounded-lg border border-slate-750 bg-surface-raised"
+        role="list"
+      >
         {items.map((item) => (
           <li key={item.id}>
             <button
@@ -71,7 +76,10 @@ export function HistoryLog({
                 {item.verdict}
               </span>
 
-              <span className="min-w-0 flex-1 truncate text-sm text-slate-300" title={item.filename}>
+              <span
+                className="min-w-0 flex-1 truncate text-sm text-slate-300"
+                title={item.filename}
+              >
                 {item.filename}
               </span>
 
@@ -79,9 +87,7 @@ export function HistoryLog({
                 {Math.round(item.confidence * 100)}%
               </span>
 
-              <span className="shrink-0 text-xs text-slate-500">
-                {formatDate(item.created_at)}
-              </span>
+              <span className="shrink-0 text-xs text-slate-500">{formatDate(item.created_at)}</span>
             </button>
           </li>
         ))}

@@ -59,10 +59,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         with self._lock:
             # Periodically clean up stale buckets to prevent memory leaks
             if now - self._last_cleanup > 300:
-                stale_ips = [
-                    k for k, v in self._buckets.items() 
-                    if not v or v[-1] < cutoff
-                ]
+                stale_ips = [k for k, v in self._buckets.items() if not v or v[-1] < cutoff]
                 for k in stale_ips:
                     del self._buckets[k]
                 self._last_cleanup = now

@@ -67,8 +67,7 @@ async def test_health_endpoint(client: AsyncClient):
 
 @mock.patch("app.services.analysis_service.asyncio.wait_for")
 async def test_analyze_inference_timeout(mock_wait_for, client: AsyncClient):
-    import asyncio
-    mock_wait_for.side_effect = asyncio.TimeoutError()
+    mock_wait_for.side_effect = TimeoutError()
 
     response = await client.post(
         "/api/analyze",

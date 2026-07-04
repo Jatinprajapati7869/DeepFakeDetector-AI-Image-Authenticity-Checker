@@ -49,26 +49,19 @@ describe('validateImageFiles', () => {
   });
 
   it('accepts up to 10 valid files', () => {
-    const files = Array.from({ length: 10 }, (_, i) =>
-      makeFile(`img${i}.jpg`, 'image/jpeg', 100),
-    );
+    const files = Array.from({ length: 10 }, (_, i) => makeFile(`img${i}.jpg`, 'image/jpeg', 100));
     expect(validateImageFiles(files).valid).toBe(true);
   });
 
   it('rejects more than 10 files', () => {
-    const files = Array.from({ length: 11 }, (_, i) =>
-      makeFile(`img${i}.jpg`, 'image/jpeg', 100),
-    );
+    const files = Array.from({ length: 11 }, (_, i) => makeFile(`img${i}.jpg`, 'image/jpeg', 100));
     const result = validateImageFiles(files);
     expect(result.valid).toBe(false);
     expect(result.error).toMatch(/10/);
   });
 
   it('rejects a batch containing an invalid type', () => {
-    const files = [
-      makeFile('good.jpg', 'image/jpeg', 100),
-      makeFile('bad.bmp', 'image/bmp', 100),
-    ];
+    const files = [makeFile('good.jpg', 'image/jpeg', 100), makeFile('bad.bmp', 'image/bmp', 100)];
     expect(validateImageFiles(files).valid).toBe(false);
   });
 });
