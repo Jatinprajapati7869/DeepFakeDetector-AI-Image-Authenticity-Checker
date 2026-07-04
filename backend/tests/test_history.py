@@ -44,7 +44,14 @@ async def test_get_analysis_by_id(client: AsyncClient):
         "/api/analyze",
         files={"file": ("single_lookup.jpg", _make_jpeg_bytes(), "image/jpeg")},
     )
-    analysis_id = upload.json()["id"]
+    assert upload.status_code == 202
+    job_id = upload.json()["job_id"]
+
+    # Retrieve the completed result to get the persisted analysis id
+    status_response = await client.get(f"/api/status/{job_id}")
+    assert status_response.status_code == 200
+    assert status_response.json()["status"] == "completed"
+    analysis_id = status_response.json()["result"]["id"]
 
     response = await client.get(f"/api/history/{analysis_id}")
     assert response.status_code == 200

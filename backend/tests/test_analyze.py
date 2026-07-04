@@ -24,12 +24,21 @@ async def test_analyze_valid_jpeg(client: AsyncClient):
         "/api/analyze",
         files={"file": ("test.jpg", _make_jpeg_bytes(), "image/jpeg")},
     )
-    assert response.status_code == 200
+    assert response.status_code == 202
     body = response.json()
-    assert body["verdict"] in ("REAL", "FAKE")
-    assert 0.0 <= body["confidence"] <= 1.0
-    assert "heatmap_url" in body
-    assert "artifacts" in body
+    assert "job_id" in body
+
+    # Poll the job status endpoint until the background task completes
+    job_id = body["job_id"]
+    status_response = await client.get(f"/api/status/{job_id}")
+    assert status_response.status_code == 200
+    status_body = status_response.json()
+    assert status_body["status"] == "completed"
+    result = status_body["result"]
+    assert result["verdict"] in ("REAL", "FAKE")
+    assert 0.0 <= result["confidence"] <= 1.0
+    assert "heatmap_url" in result
+    assert "artifacts" in result
 
 
 async def test_analyze_unsupported_format(client: AsyncClient):
