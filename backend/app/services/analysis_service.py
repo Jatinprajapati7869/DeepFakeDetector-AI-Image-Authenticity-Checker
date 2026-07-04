@@ -8,6 +8,8 @@ Orchestrates the full analysis pipeline:
 """
 
 import asyncio
+import logging
+import random
 import time
 import uuid
 from io import BytesIO
@@ -23,23 +25,37 @@ from app.db.models import AnalysisRecord
 from app.models.detector import detector
 from app.models.schemas import AnalysisResult, ArtifactBreakdown
 
+_log = logging.getLogger(__name__)
+
 MAX_DIMENSION = 1024  # Resize oversized images before analysis
+INFERENCE_TIMEOUT_S = 120  # Max seconds to wait for CPU-bound inference before failing the job
 
 # In-memory job registry for background processing
 _jobs: dict[str, dict] = {}
+_last_pruned_at: float = 0.0
 
 
 def get_job_status(job_id: str) -> dict | None:
-    # Lightweight stale job pruning (5% chance on check)
-    import random
-    if random.random() < 0.05:
-        now = time.time()
-        # Remove jobs older than 1 hour (3600 seconds)
+    global _last_pruned_at
+    now = time.time()
+    # Prune stale jobs at most once every 5 minutes — deterministic, no burst behaviour
+    if now - _last_pruned_at > 300:
+        _last_pruned_at = now
         stale_keys = [k for k, v in _jobs.items() if v.get("timestamp", now) < now - 3600]
         for k in stale_keys:
             _jobs.pop(k, None)
 
     return _jobs.get(job_id)
+
+
+def register_job(job_id: str) -> None:
+    """Mark a job as processing. Called immediately after the background task is queued."""
+    _jobs[job_id] = {"status": "processing", "timestamp": time.time()}
+
+
+def update_job(job_id: str, data: dict) -> None:
+    """Write the completed or failed result for a job."""
+    _jobs[job_id] = data
 
 
 
@@ -133,9 +149,16 @@ async def run_analysis(
 
     # Offload PyTorch inference and image processing to a thread pool
     # so we don't block the ASGI event loop and fail health checks.
-    verdict, confidence, heatmap_url, artifacts = await asyncio.to_thread(
-        _run_cpu_heavy_tasks, file_bytes, filename, analysis_id
-    )
+    try:
+        verdict, confidence, heatmap_url, artifacts = await asyncio.wait_for(
+            asyncio.to_thread(_run_cpu_heavy_tasks, file_bytes, filename, analysis_id),
+            timeout=INFERENCE_TIMEOUT_S,
+        )
+    except asyncio.TimeoutError:
+        raise ValueError(
+            f"Analysis of '{filename}' timed out after {INFERENCE_TIMEOUT_S}s. "
+            "The server may be under heavy load — please try again."
+        )
     elapsed_ms = int((time.time() - start_ms) * 1000)
 
     from datetime import datetime, timezone
@@ -174,13 +197,43 @@ async def run_analysis_background(job_id: str, file_bytes: bytes, filename: str)
     """Wrapper to run analysis in the background and update job status."""
     from app.db.database import AsyncSessionLocal
 
-    _jobs[job_id] = {"status": "processing", "timestamp": time.time()}
+    register_job(job_id)
     try:
         async with AsyncSessionLocal() as db:
             result = await run_analysis(file_bytes, filename, db)
-            _jobs[job_id] = {"status": "completed", "result": result.model_dump()}
+            update_job(job_id, {"status": "completed", "result": result.model_dump()})
     except ValueError as exc:
-        _jobs[job_id] = {"status": "failed", "error": str(exc)}
-    except Exception as exc:
-        _jobs[job_id] = {"status": "failed", "error": f"An unexpected error occurred: {exc}"}
+        update_job(job_id, {"status": "failed", "error": str(exc)})
+    except Exception:
+        _log.exception(
+            "Unexpected error in background analysis",
+            extra={"job_id": job_id, "filename": filename},
+        )
+        update_job(job_id, {"status": "failed", "error": "An unexpected error occurred. Please try again."})
 
+
+async def run_batch_background(job_id: str, files_data: list[tuple[bytes, str]]) -> None:
+    from app.db.database import AsyncSessionLocal
+    import time
+    from app.models.schemas import BatchResultItem
+
+    register_job(job_id)
+    start = time.time()
+    results = []
+
+    try:
+        async with AsyncSessionLocal() as db:
+            for file_bytes, filename in files_data:
+                try:
+                    result = await run_analysis(file_bytes, filename, db)
+                    results.append(BatchResultItem(filename=filename, result=result).model_dump())
+                except Exception as exc:
+                    results.append(BatchResultItem(filename=filename, error=str(exc)).model_dump())
+
+            elapsed_ms = int((time.time() - start) * 1000)
+            update_job(job_id, {
+                "status": "completed",
+                "result": {"results": results, "total_analysis_time_ms": elapsed_ms},
+            })
+    except Exception as exc:
+        update_job(job_id, {"status": "failed", "error": str(exc)})

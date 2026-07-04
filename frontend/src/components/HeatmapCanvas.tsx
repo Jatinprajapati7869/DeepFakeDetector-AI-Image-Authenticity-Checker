@@ -4,13 +4,16 @@ import { useHeatmapOverlay } from '@/hooks/useHeatmapOverlay';
 interface HeatmapCanvasProps {
   imageUrl: string;
   heatmapUrl: string;
+  /** When false, renders imageUrl directly with no overlay blend. Hides the toggle button. */
+  showOverlay?: boolean;
   className?: string;
 }
 
-export function HeatmapCanvas({ imageUrl, heatmapUrl, className }: HeatmapCanvasProps) {
+export function HeatmapCanvas({ imageUrl, heatmapUrl, showOverlay = true, className }: HeatmapCanvasProps) {
   const { canvasRef, showHeatmap, toggleHeatmap, isLoading } = useHeatmapOverlay({
     imageUrl,
     heatmapUrl,
+    initialShowHeatmap: showOverlay,
   });
 
   return (
@@ -31,14 +34,16 @@ export function HeatmapCanvas({ imageUrl, heatmapUrl, className }: HeatmapCanvas
         />
       </div>
 
-      <button
-        type="button"
-        onClick={toggleHeatmap}
-        className="self-center rounded-md border border-slate-750 bg-surface-raised px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-surface-overlay hover:text-white"
-        aria-pressed={showHeatmap}
-      >
-        {showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
-      </button>
+      {showOverlay && (
+        <button
+          type="button"
+          onClick={toggleHeatmap}
+          className="self-center rounded-md border border-slate-750 bg-surface-raised px-4 py-1.5 text-sm font-medium text-slate-300 transition hover:bg-surface-overlay hover:text-white"
+          aria-pressed={showHeatmap}
+        >
+          {showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
+        </button>
+      )}
     </div>
   );
 }

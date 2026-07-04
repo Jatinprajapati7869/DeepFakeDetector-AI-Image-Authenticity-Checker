@@ -54,6 +54,7 @@ export function History() {
             <HeatmapCanvas
               imageUrl={api.heatmapUrl(selected.id)}
               heatmapUrl={api.heatmapUrl(selected.id)}
+              showOverlay={false}
             />
             <div className="flex flex-col gap-4">
               <ConfidenceGauge verdict={selected.verdict} confidence={selected.confidence} />

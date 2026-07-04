@@ -4,10 +4,9 @@ from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile,
 from app.core.config import settings
 from app.models.schemas import JobAcceptedResponse, JobStatusResponse
 from app.services.analysis_service import get_job_status, run_analysis_background
+from app.utils.validation import validate_image_file
 
 router = APIRouter()
-
-ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 
 @router.post(
@@ -20,19 +19,7 @@ async def analyze_image(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="JPEG, PNG, or WebP image (max 10 MB)"),
 ) -> JobAcceptedResponse:
-    if file.content_type not in ALLOWED_CONTENT_TYPES:
-        raise HTTPException(
-            status_code=415,
-            detail=f"Unsupported media type '{file.content_type}'. Upload JPEG, PNG, or WebP.",
-        )
-
-    raw_bytes = await file.read()
-
-    if len(raw_bytes) > settings.max_upload_size_bytes:
-        raise HTTPException(
-            status_code=413,
-            detail=f"File exceeds maximum size of {settings.max_upload_size_mb} MB.",
-        )
+    raw_bytes = await validate_image_file(file)
 
     job_id = str(uuid.uuid4())
     background_tasks.add_task(

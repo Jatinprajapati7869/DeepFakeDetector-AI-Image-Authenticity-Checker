@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import analyze, batch, history
 from app.core.config import settings
-from app.core.security import RateLimitMiddleware
+from app.core.security import RateLimitMiddleware, SecurityHeadersMiddleware
 from app.db.database import create_tables
 from app.models.detector import detector
 from app.models.gradcam import init_gradcam
@@ -48,6 +48,8 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(analyze.router, prefix="/api", tags=["Detection"])
 app.include_router(batch.router, prefix="/api", tags=["Detection"])

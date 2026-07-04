@@ -7,6 +7,7 @@ created/dropped around each test).
 """
 
 import io
+from unittest import mock
 
 from httpx import AsyncClient
 from PIL import Image
@@ -62,3 +63,23 @@ async def test_health_endpoint(client: AsyncClient):
     response = await client.get("/api/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+
+
+@mock.patch("app.services.analysis_service.asyncio.wait_for")
+async def test_analyze_inference_timeout(mock_wait_for, client: AsyncClient):
+    import asyncio
+    mock_wait_for.side_effect = asyncio.TimeoutError()
+
+    response = await client.post(
+        "/api/analyze",
+        files={"file": ("timeout.jpg", _make_jpeg_bytes(), "image/jpeg")},
+    )
+    assert response.status_code == 202
+    job_id = response.json()["job_id"]
+
+    # Poll status, should be marked as failed with timeout message
+    status_response = await client.get(f"/api/status/{job_id}")
+    assert status_response.status_code == 200
+    status_body = status_response.json()
+    assert status_body["status"] == "failed"
+    assert "timed out after" in status_body["error"]

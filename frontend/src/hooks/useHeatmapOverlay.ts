@@ -4,15 +4,18 @@ interface UseHeatmapOverlayProps {
   imageUrl: string;
   heatmapUrl: string;
   opacity?: number;
+  /** Controls the initial toggle state. Defaults to true (overlay shown). */
+  initialShowHeatmap?: boolean;
 }
 
 export function useHeatmapOverlay({
   imageUrl,
   heatmapUrl,
   opacity = 0.55,
+  initialShowHeatmap = true,
 }: UseHeatmapOverlayProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [showHeatmap, setShowHeatmap] = useState(true);
+  const [showHeatmap, setShowHeatmap] = useState(initialShowHeatmap);
   const [isLoading, setIsLoading] = useState(true);
 
   const draw = useCallback(
@@ -42,7 +45,9 @@ export function useHeatmapOverlay({
         heatmap.src = heatmapUrl;
 
         heatmap.onload = () => {
-          ctx.globalAlpha = 1 - opacity;
+          // Clear and redraw cleanly: original at full opacity, heatmap blended on top
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.globalAlpha = 1;
           ctx.drawImage(original, 0, 0);
           ctx.globalAlpha = opacity;
           ctx.drawImage(heatmap, 0, 0, canvas.width, canvas.height);

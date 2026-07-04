@@ -72,18 +72,21 @@ export const api = {
 
   async pollJobStatus<T>(jobId: string, timeoutMs: number): Promise<T> {
     const startTime = Date.now();
-    
+    let attempt = 0;
+
     while (Date.now() - startTime < timeoutMs) {
       try {
         const res = await fetchWithTimeout(`${BASE_URL}/api/status/${jobId}`, {}, 10_000);
         const data = await handleResponse<{ status: string; result?: T; error?: string }>(res);
-        
+
         if (data.status === "completed" && data.result) {
           return data.result;
         }
         if (data.status === "failed") {
           throw new ApiError(500, data.error || "Background job failed.");
         }
+
+        attempt++;
       } catch (err) {
         // If it's a hard 500 error from a failed job, re-throw it so the UI shows the error
         if (err instanceof ApiError && err.status === 500) {
@@ -91,12 +94,14 @@ export const api = {
         }
         // Otherwise (like a 408 timeout or network drop), ignore and let the loop retry
         console.warn("Polling interrupted, retrying...", err);
+        attempt++;
       }
-      
-      // Wait 2 seconds before polling again
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Exponential backoff: 2s → 4s → 8s, capped at 15s
+      const delay = Math.min(2_000 * 2 ** attempt, 15_000);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-    
+
     throw new ApiError(408, "The request timed out while polling job status.");
   },
 
