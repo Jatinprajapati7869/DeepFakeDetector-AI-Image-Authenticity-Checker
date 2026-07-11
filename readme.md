@@ -3,6 +3,10 @@
 ![CI/CD](https://github.com/Jatinprajapati7869/DeepFakeDetector-AI-Image-Authenticity-Checker/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
+> Upload any image; get a real/fake verdict with confidence score; see a Grad-CAM heatmap showing exactly where the model looked.
+
+![Demo](assets/demo.gif)
+
 Upload any image and find out if it is real or AI-generated, with a confidence score and a Grad-CAM heatmap highlighting suspicious regions.
 
 **Live Demo**: [https://deepfake-detector.vercel.app](https://deepfake-detector.vercel.app)
@@ -45,6 +49,23 @@ We use a unified, cross-platform toolchain for incredibly fast onboarding.
 
 ---
 
+## Architecture
+
+```text
+React UI       FastAPI API       EfficientNet-B4
+(Vite/TS)  ->  (Python)    ->    + Grad-CAM
+    |              |
+    |              v
+    |         SQLite DB
+    |         (WAL mode)
+```
+
+## Model & Evaluation
+
+- **[Evaluation Report](docs/EVALUATION.md)**: Dataset, metrics, known limitations
+- **[Model Card](docs/MODEL_CARD.md)**: Architecture, intended use, ethical considerations
+
+---
 ## 📚 Documentation
 
 Detailed documentation has been split into dedicated files:
@@ -52,6 +73,8 @@ Detailed documentation has been split into dedicated files:
 - **[API Reference](docs/API.md)**: Detailed endpoints, JSON payloads, and response schemas.
 - **[Architecture Overview](docs/ARCHITECTURE.md)**: System design, background polling pattern, and SQLite optimizations.
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)**: Solutions for common installation and runtime errors.
+- **[Evaluation Report](docs/EVALUATION.md)**: Dataset, metrics, and known model limitations.
+- **[Model Card](docs/MODEL_CARD.md)**: Model details, intended use, and ethical considerations.
 - **[Contributing Guide](CONTRIBUTING.md)**: Guidelines for Pull Requests, Git Hooks, and Conventional Commits.
 
 ---
@@ -62,7 +85,7 @@ Detailed documentation has been split into dedicated files:
 |---|---|
 | **Frontend** | React 18, TypeScript, Vite, Tailwind CSS |
 | **Backend** | Python 3.12, FastAPI, SQLAlchemy, SQLite (WAL mode) |
-| **AI Model** | EfficientNet-B4 (`timm`), ~99% accuracy on DeepShield |
+| **AI Model** | EfficientNet-B4 (`timm`) |
 | **Explainability** | Grad-CAM (Gradient-weighted Class Activation Mapping) |
 | **Toolchain** | Ruff, Prettier, Husky, Commitlint, GitHub Actions |
 
@@ -83,4 +106,4 @@ Simply point Vercel to the `frontend/` root directory and set the environment va
 
 ## 📜 License
 
-MIT License. See `LICENSE` for more information.
+MIT License. See [LICENSE](LICENSE) for details.
