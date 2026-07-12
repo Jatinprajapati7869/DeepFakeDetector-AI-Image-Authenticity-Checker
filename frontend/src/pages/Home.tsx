@@ -1,31 +1,36 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ImageUploader } from '@/components/ImageUploader';
-import { HeatmapCanvas } from '@/components/HeatmapCanvas';
-import { ConfidenceGauge } from '@/components/ConfidenceGauge';
 import { AnalysisBreakdown } from '@/components/AnalysisBreakdown';
-import { BatchUploader } from '@/components/BatchUploader';
-import { EducationalMode } from '@/components/EducationalMode';
 import { BackendStatus } from '@/components/BackendStatus';
+import { BatchUploader } from '@/components/BatchUploader';
+import { ConfidenceGauge } from '@/components/ConfidenceGauge';
+import { EducationalMode } from '@/components/EducationalMode';
+import { HeatmapCanvas } from '@/components/HeatmapCanvas';
+import { ImageUploader } from '@/components/ImageUploader';
+import { ReportActions } from '@/components/ReportActions';
+import { ResultExplanation } from '@/components/ResultExplanation';
+import { useBackendHealth } from '@/hooks/useBackendHealth';
 import { useImageAnalysis } from '@/hooks/useImageAnalysis';
 import { api } from '@/services/api';
 
 export function Home() {
   const { status, result, error, analyze, reset } = useImageAnalysis();
+  const health = useBackendHealth();
+  const modelMode = health?.model_mode ?? 'demo';
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'single' | 'batch'>('single');
   const [elapsed, setElapsed] = useState(0);
+  const [sampleError, setSampleError] = useState<string | null>(null);
   const elapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (status === 'uploading' || status === 'analyzing') {
       setElapsed(0);
       elapsedRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
-    } else {
-      if (elapsedRef.current) {
-        clearInterval(elapsedRef.current);
-        elapsedRef.current = null;
-      }
+    } else if (elapsedRef.current) {
+      clearInterval(elapsedRef.current);
+      elapsedRef.current = null;
     }
+
     return () => {
       if (elapsedRef.current) clearInterval(elapsedRef.current);
     };
@@ -33,6 +38,7 @@ export function Home() {
 
   const handleFileSelected = useCallback(
     (file: File) => {
+      setSampleError(null);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(URL.createObjectURL(file));
       analyze(file);
@@ -40,22 +46,39 @@ export function Home() {
     [analyze, previewUrl],
   );
 
+  const handleSampleSelected = useCallback(
+    async (kind: 'real' | 'ai') => {
+      const filename = kind === 'real' ? 'real_sample.jpg' : 'ai_sample.jpg';
+      try {
+        const response = await fetch(`/demo/${filename}`);
+        if (!response.ok) throw new Error(`Sample asset returned ${response.status}`);
+        const blob = await response.blob();
+        const file = new File([blob], filename, { type: blob.type || 'image/jpeg' });
+        handleFileSelected(file);
+      } catch {
+        setSampleError('Sample image could not be loaded. Use the upload area instead.');
+      }
+    },
+    [handleFileSelected],
+  );
+
   const handleReset = useCallback(() => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
       setPreviewUrl(null);
     }
+    setSampleError(null);
     reset();
   }, [reset, previewUrl]);
 
   const isProcessing = status === 'uploading' || status === 'analyzing';
 
   function loadingMessage(): string {
-    if (status === 'uploading') return 'Uploading image…';
-    if (elapsed < 5) return 'Running forensic analysis…';
-    if (elapsed < 20) return `Scanning pixels… (${elapsed}s)`;
-    if (elapsed < 60) return `Still working — server may be waking up (${elapsed}s)`;
-    return `Almost there… please wait (${elapsed}s)`;
+    if (status === 'uploading') return 'Uploading image...';
+    if (elapsed < 5) return 'Running forensic analysis...';
+    if (elapsed < 20) return `Scanning pixels... (${elapsed}s)`;
+    if (elapsed < 60) return `Still working - server may be waking up (${elapsed}s)`;
+    return `Almost there... please wait (${elapsed}s)`;
   }
 
   return (
@@ -72,7 +95,6 @@ export function Home() {
 
       <BackendStatus />
 
-      {/* Mode tabs */}
       <div className="mb-6 flex rounded-lg border border-slate-750 bg-surface-raised p-1">
         {(['single', 'batch'] as const).map((tab) => (
           <button
@@ -97,7 +119,32 @@ export function Home() {
 
       {activeTab === 'single' ? (
         <div className="flex flex-col gap-6">
-          {status === 'idle' && <ImageUploader onFileSelected={handleFileSelected} />}
+          {status === 'idle' && (
+            <div className="flex flex-col gap-4">
+              <ImageUploader onFileSelected={handleFileSelected} />
+              {sampleError && (
+                <p role="alert" className="text-center text-sm text-fake">
+                  {sampleError}
+                </p>
+              )}
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSampleSelected('real')}
+                  className="rounded-md border border-slate-750 bg-surface-raised px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-surface-overlay hover:text-white"
+                >
+                  Try Real Sample
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSampleSelected('ai')}
+                  className="rounded-md border border-slate-750 bg-surface-raised px-4 py-2 text-sm font-medium text-slate-300 transition hover:bg-surface-overlay hover:text-white"
+                >
+                  Try AI Sample
+                </button>
+              </div>
+            </div>
+          )}
 
           {isProcessing && (
             <div
@@ -151,6 +198,8 @@ export function Home() {
               </div>
 
               <AnalysisBreakdown artifacts={result.artifacts} />
+              <ResultExplanation result={result} modelMode={modelMode} />
+              <ReportActions result={result} modelMode={modelMode} />
 
               <button
                 type="button"

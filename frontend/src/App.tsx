@@ -3,6 +3,9 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 
 const Home = lazy(() => import('@/pages/Home').then((m) => ({ default: m.Home })));
 const History = lazy(() => import('@/pages/History').then((m) => ({ default: m.History })));
+const AnalysisDetail = lazy(() =>
+  import('@/pages/AnalysisDetail').then((m) => ({ default: m.AnalysisDetail })),
+);
 
 function NavBar() {
   return (
@@ -58,6 +61,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/history" element={<History />} />
+            <Route path="/history/:id" element={<AnalysisDetail />} />
           </Routes>
         </Suspense>
       </div>

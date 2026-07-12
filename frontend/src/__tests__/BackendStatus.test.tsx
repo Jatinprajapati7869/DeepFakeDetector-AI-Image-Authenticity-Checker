@@ -1,34 +1,45 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
 import { BackendStatus } from '@/components/BackendStatus';
 import * as apiModule from '@/services/api';
+
+const demoHealth = {
+  status: 'ok',
+  model_loaded: false,
+  version: '0.1.0',
+  demo_mode: true,
+  model_mode: 'demo' as const,
+};
 
 describe('BackendStatus', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('BS1: Renders nothing while checking', () => {
-    // API ping is pending
-    vi.spyOn(apiModule.api, 'ping').mockReturnValue(new Promise(() => {}));
+    vi.spyOn(apiModule.api, 'getHealth').mockReturnValue(new Promise(() => {}));
 
     const { container } = render(<BackendStatus />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('BS2: Renders nothing when backend is ready', async () => {
-    vi.spyOn(apiModule.api, 'ping').mockResolvedValue(true);
+  it('BS2: Shows backend ready and model mode when backend is ready', async () => {
+    vi.spyOn(apiModule.api, 'getHealth').mockResolvedValue(demoHealth);
 
-    const { container } = render(<BackendStatus />);
+    render(<BackendStatus />);
 
-    // Wait for effect and state update
     await waitFor(() => {
-      expect(container).toBeEmptyDOMElement();
+      expect(screen.getByText(/Backend ready/i)).toBeInTheDocument();
+      expect(screen.getByText(/Demo mode/i)).toBeInTheDocument();
     });
   });
 
-  it('BS3: Renders amber "waking" banner after first failed ping', async () => {
-    vi.spyOn(apiModule.api, 'ping').mockResolvedValue(false);
+  it('BS3: Renders amber waking banner after first failed health check', async () => {
+    vi.spyOn(apiModule.api, 'getHealth').mockRejectedValue(new Error('offline'));
 
     render(<BackendStatus />);
 
@@ -39,7 +50,7 @@ describe('BackendStatus', () => {
 
   it('BS4: Shows elapsed seconds counter', async () => {
     vi.useFakeTimers();
-    vi.spyOn(apiModule.api, 'ping').mockResolvedValue(false);
+    vi.spyOn(apiModule.api, 'getHealth').mockRejectedValue(new Error('offline'));
 
     render(<BackendStatus />);
 
@@ -49,18 +60,16 @@ describe('BackendStatus', () => {
 
     expect(screen.getByText(/Backend is waking up/i)).toBeInTheDocument();
 
-    // Advance timers by 2 seconds
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2000);
     });
 
-    expect(screen.getByText(/Backend is waking up… \(2s\)/i)).toBeInTheDocument();
-    vi.useRealTimers();
+    expect(screen.getByText(/Backend is waking up\.\.\. \(2s\)/i)).toBeInTheDocument();
   });
 
   it('BS5: Transitions to offline banner after OFFLINE_THRESHOLD_S seconds', async () => {
     vi.useFakeTimers();
-    vi.spyOn(apiModule.api, 'ping').mockResolvedValue(false);
+    vi.spyOn(apiModule.api, 'getHealth').mockRejectedValue(new Error('offline'));
 
     render(<BackendStatus />);
 
@@ -68,19 +77,17 @@ describe('BackendStatus', () => {
       await vi.runAllTicks();
     });
 
-    // OFFLINE_THRESHOLD_S is 120
     await act(async () => {
       await vi.advanceTimersByTimeAsync(121000);
     });
 
     expect(screen.getByText(/Backend is offline/i)).toBeInTheDocument();
     expect(screen.queryByText(/Backend is waking up/i)).not.toBeInTheDocument();
-    vi.useRealTimers();
   });
 
-  it('BS6: Offline banner contains "refresh the page" action', async () => {
+  it('BS6: Offline banner contains refresh action', async () => {
     vi.useFakeTimers();
-    vi.spyOn(apiModule.api, 'ping').mockResolvedValue(false);
+    vi.spyOn(apiModule.api, 'getHealth').mockRejectedValue(new Error('offline'));
 
     render(<BackendStatus />);
 
@@ -92,11 +99,6 @@ describe('BackendStatus', () => {
       await vi.advanceTimersByTimeAsync(121000);
     });
 
-    const refreshBtn = screen.getByRole('button', { name: /refresh the page/i });
-    expect(refreshBtn).toBeInTheDocument();
-
-    // We can't actually reload in JSDOM cleanly without mocking window.location.reload,
-    // but verifying the button exists and is clickable is sufficient for BS6
-    vi.useRealTimers();
+    expect(screen.getByRole('button', { name: /refresh the page/i })).toBeInTheDocument();
   });
 });

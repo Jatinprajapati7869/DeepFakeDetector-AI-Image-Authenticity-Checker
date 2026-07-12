@@ -50,7 +50,7 @@ def test_heatmap_dimensions_match_input(sample_image: Image.Image, tmp_path: Pat
 
     from PIL import Image as PILImage
 
-    result = PILImage.open(tmp_path / f"{analysis_id}.png")
-    assert result.size == sample_image.size, "Heatmap should match original image dimensions"
+    with PILImage.open(tmp_path / f"{analysis_id}.png") as result:
+        assert result.size == sample_image.size, "Heatmap should match original image dimensions"
 
     settings.heatmap_storage_path = original_path

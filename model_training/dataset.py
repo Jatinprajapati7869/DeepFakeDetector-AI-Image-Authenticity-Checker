@@ -20,6 +20,7 @@ Expected directory layout after download:
 Usage:
     train_loader, val_loader = build_dataloaders("./data/real_vs_fake/real-vs-fake", batch_size=32)
 """
+
 from pathlib import Path
 
 import torch
@@ -29,20 +30,24 @@ from torchvision import datasets, transforms
 # EfficientNet-B4 native input size
 IMAGE_SIZE = 380
 
-TRAIN_TRANSFORMS = transforms.Compose([
-    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-    transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1),
-    transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+TRAIN_TRANSFORMS = transforms.Compose(
+    [
+        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+        transforms.RandomHorizontalFlip(p=0.5),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1),
+        transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 0.5)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
-EVAL_TRANSFORMS = transforms.Compose([
-    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
+EVAL_TRANSFORMS = transforms.Compose(
+    [
+        transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
 
 
 def build_dataloaders(

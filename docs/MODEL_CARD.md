@@ -23,3 +23,8 @@
 ## Performance
 
 See [EVALUATION.md](EVALUATION.md) for detailed metrics.
+## Demo Mode Disclosure
+
+The default local configuration uses `DEMO_MODE=true`, which returns deterministic simulated predictions. Demo mode exists so reviewers can run the full product without downloading large weights. It must not be cited as model performance.
+
+For real inference, set `DEMO_MODE=false` and `USE_MOCK_MODEL=false`, then provide `MODEL_PATH=./weights/best_model.pth`.

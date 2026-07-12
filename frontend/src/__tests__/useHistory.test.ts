@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useHistory } from '@/hooks/useHistory';
 import * as apiModule from '@/services/api';
 import type { HistoryPage } from '@/types/analysis';
@@ -54,7 +54,7 @@ describe('useHistory', () => {
     expect(result.current.isLoading).toBe(true);
 
     // Wait for effect to settle
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
 
@@ -70,7 +70,7 @@ describe('useHistory', () => {
 
     const { result } = renderHook(() => useHistory());
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
 
@@ -78,14 +78,18 @@ describe('useHistory', () => {
       result.current.goToPage(2);
     });
 
-    expect(result.current.isLoading).toBe(true);
-
-    await vi.waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(true);
     });
 
-    expect(fetchSpy).toHaveBeenCalledWith(2);
-    expect(result.current.data).toEqual(MOCK_PAGE_2);
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith(2);
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(MOCK_PAGE_2);
+      expect(result.current.isLoading).toBe(false);
+    });
   });
 
   it('H3: Error response exposes error string and clears data', async () => {
@@ -93,7 +97,7 @@ describe('useHistory', () => {
 
     const { result } = renderHook(() => useHistory());
 
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
     });
 

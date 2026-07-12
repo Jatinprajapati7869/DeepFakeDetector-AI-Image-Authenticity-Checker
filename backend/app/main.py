@@ -38,7 +38,7 @@ app.add_middleware(
     paths=("/api/analyze", "/api/batch"),
 )
 
-# CORS — must be added LAST to be the outermost middleware!
+# CORS must be added last to be the outermost middleware.
 # This ensures CORS headers are attached to 429 errors from the rate limiter
 # and also correctly intercepts OPTIONS preflight requests.
 app.add_middleware(
@@ -58,8 +58,17 @@ app.include_router(history.router, prefix="/api", tags=["History"])
 
 @app.get("/api/health", response_model=HealthResponse, tags=["System"])
 async def health_check() -> HealthResponse:
+    if settings.demo_mode:
+        model_mode = "demo"
+    elif settings.use_mock_model:
+        model_mode = "mock"
+    else:
+        model_mode = "real"
+
     return HealthResponse(
         status="ok",
-        model_loaded=not settings.use_mock_model,
+        model_loaded=model_mode == "real",
         version=settings.version,
+        demo_mode=settings.demo_mode,
+        model_mode=model_mode,
     )

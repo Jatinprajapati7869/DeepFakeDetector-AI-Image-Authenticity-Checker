@@ -1,4 +1,4 @@
-# ── Python ───────────────────────────────────────────────────────────────────
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -9,33 +9,36 @@ venv/
 dist/
 build/
 
-# ── Model weights (large binary — downloaded at runtime from HuggingFace) ────
+# Model weights (large binary downloaded at runtime from Hugging Face)
 backend/weights/*.pth
 backend/weights/*.pt
 backend/weights/*.bin
 Model_web/
 
-# ── Runtime data (generated, not source) ────────────────────────────────────
+# Runtime data (generated, not source)
 backend/data/
+data/
 backend/.pytest_cache/
 
-# ── HuggingFace cache ────────────────────────────────────────────────────────
+# Hugging Face cache
 backend/weights/.cache/
 
-# ── Node ─────────────────────────────────────────────────────────────────────
+# Node
 node_modules/
 frontend/dist/
 frontend/.env.local
+frontend/test-results/
+frontend/playwright-report/
 
-# ── Jupyter ──────────────────────────────────────────────────────────────────
+# Jupyter
 model_training/notebooks/.ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# ── OS ───────────────────────────────────────────────────────────────────────
+# OS
 .DS_Store
 Thumbs.db
 
-# ── IDE ──────────────────────────────────────────────────────────────────────
+# IDE
 .idea/
 .vscode/
 *.swp

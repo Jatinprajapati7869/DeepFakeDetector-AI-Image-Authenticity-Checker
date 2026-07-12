@@ -1,8 +1,9 @@
 import { useCallback, useReducer, useRef } from 'react';
 import { clsx } from 'clsx';
-import { validateImageFiles } from '@/utils/imageValidation';
 import { api, ApiError } from '@/services/api';
 import type { BatchResultItem } from '@/types/analysis';
+import { downloadBatchCsv } from '@/utils/batchExport';
+import { validateImageFiles } from '@/utils/imageValidation';
 
 interface BatchState {
   status: 'idle' | 'analyzing' | 'done' | 'error';
@@ -63,7 +64,7 @@ export function BatchUploader() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
@@ -74,17 +75,26 @@ export function BatchUploader() {
           )}
           aria-busy={isAnalyzing}
         >
-          {isAnalyzing ? 'Analyzing…' : 'Select Images (up to 10)'}
+          {isAnalyzing ? 'Analyzing...' : 'Select Images (up to 10)'}
         </button>
 
         {state.status === 'done' && (
-          <button
-            type="button"
-            onClick={() => dispatch({ type: 'RESET' })}
-            className="text-sm text-slate-400 underline hover:text-slate-200"
-          >
-            Clear results
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => downloadBatchCsv(state.results)}
+              className="rounded-md border border-slate-750 px-3 py-2 text-sm text-slate-300 transition hover:bg-surface-overlay hover:text-white"
+            >
+              Download CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => dispatch({ type: 'RESET' })}
+              className="text-sm text-slate-400 underline hover:text-slate-200"
+            >
+              Clear results
+            </button>
+          </>
         )}
 
         <input
@@ -145,11 +155,11 @@ function BatchResultsTable({ results }: { results: BatchResultItem[] }) {
                     {item.result.verdict}
                   </span>
                 ) : (
-                  '—'
+                  '-'
                 )}
               </td>
               <td className="px-4 py-3 text-slate-400">
-                {item.result ? `${Math.round(item.result.confidence * 100)}%` : '—'}
+                {item.result ? `${Math.round(item.result.confidence * 100)}%` : '-'}
               </td>
               <td className="px-4 py-3">
                 {item.error ? (

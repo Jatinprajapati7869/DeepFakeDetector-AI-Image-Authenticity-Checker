@@ -138,4 +138,47 @@ describe('api service', () => {
       expect(fetchSpy.mock.calls[1][0]).toMatch(/\/api\/status\/job-img-1$/);
     });
   });
+  describe('metadata endpoints', () => {
+    it('API7: getHealth parses model mode metadata', async () => {
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            status: 'ok',
+            model_loaded: false,
+            version: '0.1.0',
+            demo_mode: true,
+            model_mode: 'demo',
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
+        ),
+      );
+
+      const health = await api.getHealth();
+
+      expect(health.model_mode).toBe('demo');
+      expect(health.demo_mode).toBe(true);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringMatching(/\/api\/health$/),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+    });
+
+    it('API8: getAnalysis calls the history detail endpoint', async () => {
+      const mockResult = { id: 'analysis-1', verdict: 'FAKE' };
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+        new Response(JSON.stringify(mockResult), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+
+      const result = await api.getAnalysis('analysis-1');
+
+      expect(result).toEqual(mockResult);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        expect.stringMatching(/\/api\/history\/analysis-1$/),
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+    });
+  });
 });

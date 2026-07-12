@@ -14,6 +14,7 @@ Usage:
 Output:
     Saves best weights to ../backend/weights/efficientnet_b4_ft.pth
 """
+
 import argparse
 import math
 from pathlib import Path
@@ -104,11 +105,15 @@ def main(args: argparse.Namespace) -> None:
     patience_count = 0
 
     for epoch in range(1, args.epochs + 1):
-        train_loss = train_one_epoch(model, train_loader, optimizer, criterion, scaler, device)
+        train_loss = train_one_epoch(
+            model, train_loader, optimizer, criterion, scaler, device
+        )
         val_acc, _ = evaluate(model, val_loader, device)
         scheduler.step()
 
-        print(f"Epoch {epoch:02d}/{args.epochs} | loss: {train_loss:.4f} | val_acc: {val_acc:.4f}")
+        print(
+            f"Epoch {epoch:02d}/{args.epochs} | loss: {train_loss:.4f} | val_acc: {val_acc:.4f}"
+        )
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
@@ -118,7 +123,9 @@ def main(args: argparse.Namespace) -> None:
         else:
             patience_count += 1
             if patience_count >= args.patience:
-                print(f"Early stopping after {args.patience} epochs without improvement.")
+                print(
+                    f"Early stopping after {args.patience} epochs without improvement."
+                )
                 break
 
     print(f"\nTraining complete. Best val accuracy: {best_val_acc:.4f}")
@@ -126,9 +133,15 @@ def main(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Fine-tune EfficientNet-B4 for deepfake detection")
-    parser.add_argument("--data", required=True, help="Path to real-vs-fake dataset root")
+    parser = argparse.ArgumentParser(
+        description="Fine-tune EfficientNet-B4 for deepfake detection"
+    )
+    parser.add_argument(
+        "--data", required=True, help="Path to real-vs-fake dataset root"
+    )
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--patience", type=int, default=5, help="Early stopping patience")
+    parser.add_argument(
+        "--patience", type=int, default=5, help="Early stopping patience"
+    )
     main(parser.parse_args())

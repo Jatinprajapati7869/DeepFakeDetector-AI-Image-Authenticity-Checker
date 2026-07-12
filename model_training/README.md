@@ -63,7 +63,7 @@ python evaluate.py \
   --weights ../backend/weights/efficientnet_b4_ft.pth
 ```
 
-Outputs overall accuracy, per-class precision/recall/F1, and a confusion matrix.
+Outputs overall accuracy, per-class precision/recall/F1, AUC-ROC, a confusion matrix, and optional JSON metrics suitable for `docs/results/metrics.json`.
 
 ## Architecture Decisions
 

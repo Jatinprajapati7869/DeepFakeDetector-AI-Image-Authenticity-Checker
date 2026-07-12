@@ -56,3 +56,5 @@ class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
     version: str
+    demo_mode: bool
+    model_mode: Literal["demo", "mock", "real"]

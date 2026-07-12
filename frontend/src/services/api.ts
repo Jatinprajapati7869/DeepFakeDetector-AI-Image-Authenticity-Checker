@@ -1,4 +1,4 @@
-import type { AnalysisResult, BatchResultItem, HistoryPage } from '@/types/analysis';
+import type { AnalysisResult, BatchResultItem, HealthStatus, HistoryPage } from '@/types/analysis';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -35,10 +35,9 @@ async function fetchWithTimeout(
     if (err instanceof DOMException && err.name === 'AbortError') {
       throw new ApiError(
         408,
-        'The request timed out. The backend may still be waking up — please wait 30 seconds and try again.',
+        'The request timed out. The backend may still be waking up - please wait 30 seconds and try again.',
       );
     }
-    // Network error (CORS, no internet, backend down)
     throw new ApiError(
       0,
       'Could not reach the server. Check your internet connection or wait for the backend to wake up.',
@@ -57,10 +56,15 @@ async function handleResponse<T>(res: Response): Promise<T> {
 }
 
 export const api = {
+  async getHealth(): Promise<HealthStatus> {
+    const res = await fetchWithTimeout(`${BASE_URL}/api/health`, {}, 8_000);
+    return handleResponse<HealthStatus>(res);
+  },
+
   async ping(): Promise<boolean> {
     try {
-      const res = await fetchWithTimeout(`${BASE_URL}/api/health`, {}, 8_000);
-      return res.ok;
+      await this.getHealth();
+      return true;
     } catch {
       return false;
     }
@@ -84,16 +88,13 @@ export const api = {
 
         attempt++;
       } catch (err) {
-        // If it's a hard 500 error from a failed job, re-throw it so the UI shows the error
         if (err instanceof ApiError && err.status === 500) {
           throw err;
         }
-        // Otherwise (like a 408 timeout or network drop), ignore and let the loop retry
         console.warn('Polling interrupted, retrying...', err);
         attempt++;
       }
 
-      // Exponential backoff: 2s → 4s → 8s, capped at 15s
       const delay = Math.min(2_000 * 2 ** attempt, 15_000);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -138,6 +139,15 @@ export const api = {
       TIMEOUT_MS.default,
     );
     return handleResponse<HistoryPage>(res);
+  },
+
+  async getAnalysis(analysisId: string): Promise<AnalysisResult> {
+    const res = await fetchWithTimeout(
+      `${BASE_URL}/api/history/${analysisId}`,
+      {},
+      TIMEOUT_MS.default,
+    );
+    return handleResponse<AnalysisResult>(res);
   },
 
   heatmapUrl(analysisId: string): string {

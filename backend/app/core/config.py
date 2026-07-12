@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     # Model
     model_path: str = "./weights/best_model.pth"
+    demo_mode: bool = True
     use_mock_model: bool = True
 
     # Upload limits

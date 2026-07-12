@@ -2,8 +2,8 @@
 EfficientNet-B4 deepfake detector.
 
 Supports two modes:
-  - USE_MOCK_MODEL=true  (default): returns random predictions. Fast startup,
-    no weights needed. Good for frontend development.
+  - DEMO_MODE=true or USE_MOCK_MODEL=true: returns deterministic simulated predictions. Fast startup,
+    no weights needed. Good for demos, reviews, and frontend development.
   - USE_MOCK_MODEL=false: loads the pre-trained DeepShield weights from
     MODEL_PATH and runs real EfficientNet-B4 inference.
 
@@ -12,11 +12,11 @@ Architecture : timm EfficientNet-B4 backbone + custom sigmoid head
 Label convention: sigmoid output — 0.0 = Fake, 1.0 = Real
 """
 
-import random
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from app.core.config import settings
+from app.models.mock_detector import mock_predict
 
 if TYPE_CHECKING:
     from PIL import Image as PILImage
@@ -56,7 +56,7 @@ class DeepfakeDetector:
     """
 
     def __init__(self) -> None:
-        self._mock = settings.use_mock_model
+        self._mock = settings.demo_mode or settings.use_mock_model
         self._model = None
         self._device = None
 
@@ -98,7 +98,7 @@ class DeepfakeDetector:
             sigmoid output < 0.5 → FAKE  (1 - score is the fake confidence)
         """
         if self._mock:
-            return self._mock_predict()
+            return mock_predict(image)
 
         import torch
         from torchvision import transforms
@@ -127,12 +127,6 @@ class DeepfakeDetector:
     def get_model(self):
         """Expose the underlying nn.Module for Grad-CAM hook attachment."""
         return self._model
-
-    @staticmethod
-    def _mock_predict() -> tuple[str, float]:
-        verdict = random.choice(["REAL", "FAKE"])
-        confidence = round(random.uniform(0.70, 0.99), 4)
-        return verdict, confidence
 
 
 detector = DeepfakeDetector()
